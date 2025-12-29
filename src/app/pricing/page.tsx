@@ -1,8 +1,21 @@
-import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { PricingCard } from "@/components/pricing/pricing-card";
+import { currentUser } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { SubscriptionPlan } from "@prisma/client";
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const user = await currentUser();
+  let currentPlan: SubscriptionPlan = "FREE";
+
+  if (user) {
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkId: user.id },
+    });
+    if (dbUser) {
+      currentPlan = dbUser.subscriptionPlan;
+    }
+  }
+
   const plans = [
     {
       name: "Базовый",
@@ -14,9 +27,8 @@ export default function PricingPage() {
         "Добавление 1 студии",
         "Базовая поддержка",
       ],
-      buttonText: "Начать бесплатно",
-      href: "/sign-up",
       popular: false,
+      planId: "FREE" as SubscriptionPlan,
     },
     {
       name: "Профессионал",
@@ -30,9 +42,8 @@ export default function PricingPage() {
         "Расширенная статистика",
         "Личный менеджер",
       ],
-      buttonText: "Выбрать тариф",
-      href: "/sign-up?plan=pro",
       popular: true,
+      planId: "PRO" as SubscriptionPlan,
     },
     {
       name: "Бизнес",
@@ -46,9 +57,8 @@ export default function PricingPage() {
         "Интеграция с CRM",
         "Премиум поддержка 24/7",
       ],
-      buttonText: "Связаться с нами",
-      href: "/contacts",
       popular: false,
+      planId: "BUSINESS" as SubscriptionPlan,
     },
   ];
 
@@ -64,48 +74,12 @@ export default function PricingPage() {
 
       <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {plans.map((plan) => (
-          <div
-            key={plan.name}
-            className={`relative rounded-xl border bg-card p-8 shadow-sm flex flex-col ${
-              plan.popular ? "border-primary ring-1 ring-primary shadow-md" : ""
-            }`}
-          >
-            {plan.popular && (
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-primary text-primary-foreground text-sm font-medium rounded-full">
-                Популярный
-              </div>
-            )}
-
-            <div className="mb-6">
-              <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
-              <div className="flex items-baseline gap-1">
-                <span className="text-3xl font-bold">{plan.price}</span>
-                {plan.period && (
-                  <span className="text-muted-foreground">{plan.period}</span>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">
-                {plan.description}
-              </p>
-            </div>
-
-            <ul className="space-y-3 mb-8 flex-1">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-sm">
-                  <Check className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-
-            <Button
-              asChild
-              variant={plan.popular ? "default" : "outline"}
-              className="w-full"
-            >
-              <Link href={plan.href}>{plan.buttonText}</Link>
-            </Button>
-          </div>
+          <PricingCard 
+            key={plan.name} 
+            plan={plan} 
+            currentPlan={currentPlan}
+            isLoggedIn={!!user}
+          />
         ))}
       </div>
     </div>
