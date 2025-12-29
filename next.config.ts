@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "img.clerk.com", // For user avatars
       },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com", // For seed data
+      },
     ],
   },
 };
