@@ -12,3 +12,18 @@ export async function updateTicketStatus(ticketId: string, status: string) {
   revalidatePath(`/admin/tickets/${ticketId}`);
   revalidatePath("/admin/tickets");
 }
+
+export async function deleteStudio(studioId: string) {
+  await prisma.studio.delete({
+    where: { id: studioId },
+  });
+  revalidatePath("/admin/studios");
+}
+
+export async function deleteUser(userId: string) {
+  await prisma.user.delete({
+    where: { id: userId },
+  });
+  revalidatePath("/admin/users");
+}
+
