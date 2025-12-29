@@ -46,7 +46,7 @@ export default function SearchMap({ studios }: SearchMapProps) {
           width="100%"
           height="100%"
         >
-          <ZoomControl options={{ float: "right" }} />
+          <ZoomControl options={{ position: { right: 10, top: 10 } }} />
           {validStudios.map((studio) => (
             <Placemark
               key={studio.id}
