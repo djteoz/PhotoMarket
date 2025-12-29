@@ -13,26 +13,12 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  let dbUser = null;
-  try {
-    dbUser = await prisma.user.findUnique({
-      where: { clerkId: user.id },
-      include: {
-        studios: true,
-      },
-    });
-  } catch (e) {
-    console.error("DB Error:", e);
-    return (
-      <div className="container mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold mb-4">Ошибка</h1>
-        <p>
-          Не удалось подключиться к базе данных. Пожалуйста, проверьте настройки
-          подключения.
-        </p>
-      </div>
-    );
-  }
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: user.id },
+    include: {
+      studios: true,
+    },
+  });
 
   if (!dbUser) {
     return (
