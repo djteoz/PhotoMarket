@@ -5,7 +5,7 @@ import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { createReview } from "@/app/actions/review";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 interface AddReviewFormProps {
@@ -17,16 +17,13 @@ export function AddReviewForm({ studioId }: AddReviewFormProps) {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (rating === 0) {
-      toast({
-        title: "Ошибка",
+      toast.error("Ошибка", {
         description: "Пожалуйста, поставьте оценку",
-        variant: "destructive",
       });
       return;
     }
@@ -40,14 +37,11 @@ export function AddReviewForm({ studioId }: AddReviewFormProps) {
       const result = await createReview(formData);
 
       if (result.error) {
-        toast({
-          title: "Ошибка",
+        toast.error("Ошибка", {
           description: result.error,
-          variant: "destructive",
         });
       } else {
-        toast({
-          title: "Успешно",
+        toast.success("Успешно", {
           description: "Ваш отзыв добавлен",
         });
         setRating(0);
