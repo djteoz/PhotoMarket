@@ -8,7 +8,7 @@ export async function updateTicketStatus(ticketId: string, status: string) {
     where: { id: ticketId },
     data: { status },
   });
-  
+
   revalidatePath(`/admin/tickets/${ticketId}`);
   revalidatePath("/admin/tickets");
 }

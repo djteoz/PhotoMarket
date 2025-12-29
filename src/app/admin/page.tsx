@@ -3,12 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Building2, MessageSquare, Calendar } from "lucide-react";
 
 export default async function AdminDashboard() {
-  const [usersCount, studiosCount, ticketsCount, bookingsCount] = await Promise.all([
-    prisma.user.count(),
-    prisma.studio.count(),
-    prisma.supportTicket.count({ where: { status: "OPEN" } }),
-    prisma.booking.count(),
-  ]);
+  const [usersCount, studiosCount, ticketsCount, bookingsCount] =
+    await Promise.all([
+      prisma.user.count(),
+      prisma.studio.count(),
+      prisma.supportTicket.count({ where: { status: "OPEN" } }),
+      prisma.booking.count(),
+    ]);
 
   const stats = [
     {
@@ -41,7 +42,7 @@ export default async function AdminDashboard() {
   return (
     <div className="space-y-8">
       <h2 className="text-3xl font-bold tracking-tight">Панель управления</h2>
-      
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <Card key={stat.title}>
@@ -49,7 +50,11 @@ export default async function AdminDashboard() {
               <CardTitle className="text-sm font-medium">
                 {stat.title}
               </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.alert ? "text-red-500" : "text-muted-foreground"}`} />
+              <stat.icon
+                className={`h-4 w-4 ${
+                  stat.alert ? "text-red-500" : "text-muted-foreground"
+                }`}
+              />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>

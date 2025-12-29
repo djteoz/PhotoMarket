@@ -1,6 +1,13 @@
 import { checkAdmin } from "@/lib/check-admin";
 import Link from "next/link";
-import { LayoutDashboard, MessageSquare, Users, Building2, Settings, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  MessageSquare,
+  Users,
+  Building2,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default async function AdminLayout({
@@ -20,7 +27,7 @@ export default async function AdminLayout({
             Admin Panel
           </h1>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-2">
           <Link href="/admin">
             <Button variant="ghost" className="w-full justify-start gap-2">
@@ -59,9 +66,7 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-8 overflow-y-auto">
-        {children}
-      </main>
+      <main className="flex-1 p-8 overflow-y-auto">{children}</main>
     </div>
   );
 }

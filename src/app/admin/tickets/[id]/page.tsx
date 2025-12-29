@@ -7,7 +7,11 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { TicketStatusSelector } from "@/components/admin/ticket-status-selector";
 
-export default async function TicketDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function TicketDetailsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const ticket = await prisma.supportTicket.findUnique({
     where: { id },
@@ -25,7 +29,9 @@ export default async function TicketDetailsPage({ params }: { params: Promise<{ 
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <h2 className="text-2xl font-bold tracking-tight">Обращение #{ticket.id.slice(-4)}</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          Обращение #{ticket.id.slice(-4)}
+        </h2>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -50,11 +56,16 @@ export default async function TicketDetailsPage({ params }: { params: Promise<{ 
             <CardContent className="space-y-4">
               <div className="space-y-1">
                 <span className="text-sm text-muted-foreground">Статус</span>
-                <TicketStatusSelector ticketId={ticket.id} currentStatus={ticket.status} />
+                <TicketStatusSelector
+                  ticketId={ticket.id}
+                  currentStatus={ticket.status}
+                />
               </div>
 
               <div className="space-y-1">
-                <span className="text-sm text-muted-foreground">Отправитель</span>
+                <span className="text-sm text-muted-foreground">
+                  Отправитель
+                </span>
                 <div className="flex items-center gap-2">
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{ticket.name}</span>
@@ -65,17 +76,26 @@ export default async function TicketDetailsPage({ params }: { params: Promise<{ 
                 <span className="text-sm text-muted-foreground">Email</span>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground" />
-                  <a href={`mailto:${ticket.email}`} className="text-primary hover:underline">
+                  <a
+                    href={`mailto:${ticket.email}`}
+                    className="text-primary hover:underline"
+                  >
                     {ticket.email}
                   </a>
                 </div>
               </div>
 
               <div className="space-y-1">
-                <span className="text-sm text-muted-foreground">Дата создания</span>
+                <span className="text-sm text-muted-foreground">
+                  Дата создания
+                </span>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>{format(ticket.createdAt, "dd MMM yyyy HH:mm", { locale: ru })}</span>
+                  <span>
+                    {format(ticket.createdAt, "dd MMM yyyy HH:mm", {
+                      locale: ru,
+                    })}
+                  </span>
                 </div>
               </div>
             </CardContent>

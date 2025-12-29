@@ -14,7 +14,7 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const dbUser = await prisma.user.findUnique({
+  let dbUser = await prisma.user.findUnique({
     where: { clerkId: user.id },
     include: {
       studios: true,
@@ -22,27 +22,18 @@ export default async function DashboardPage() {
   });
 
   if (!dbUser) {
-    return (
-      <div className="container mx-auto py-10 px-4">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Личный кабинет</h1>
-          <Link href="/add-studio">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> Добавить студию
-            </Button>
-          </Link>
-        </div>
-        <div className="text-center py-12 border-2 border-dashed rounded-lg">
-          <h3 className="text-lg font-medium mb-2">Добро пожаловать!</h3>
-          <p className="text-gray-500 mb-4">
-            Вы успешно вошли, но ваш профиль еще не создан в нашей базе данных.
-          </p>
-          <p className="text-gray-500 mb-4">
-            Попробуйте добавить студию, чтобы завершить настройку.
-          </p>
-        </div>
-      </div>
-    );
+    // Sync user if not found
+    dbUser = await prisma.user.create({
+      data: {
+        clerkId: user.id,
+        email: user.emailAddresses[0].emailAddress,
+        name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+        image: user.imageUrl,
+      },
+      include: {
+        studios: true,
+      },
+    });
   }
 
   return (

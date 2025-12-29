@@ -2,11 +2,23 @@
 
 import { updateTicketStatus } from "@/app/actions/admin";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { useState } from "react";
 
-export function TicketStatusSelector({ ticketId, currentStatus }: { ticketId: string, currentStatus: string }) {
+export function TicketStatusSelector({
+  ticketId,
+  currentStatus,
+}: {
+  ticketId: string;
+  currentStatus: string;
+}) {
   const [status, setStatus] = useState(currentStatus);
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +37,11 @@ export function TicketStatusSelector({ ticketId, currentStatus }: { ticketId: st
 
   return (
     <div className="flex items-center gap-2">
-      <Select value={status} onValueChange={handleStatusChange} disabled={loading}>
+      <Select
+        value={status}
+        onValueChange={handleStatusChange}
+        disabled={loading}
+      >
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Статус" />
         </SelectTrigger>
