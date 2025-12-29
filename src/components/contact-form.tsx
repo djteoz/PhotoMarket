@@ -17,7 +17,10 @@ const initialState = {
 };
 
 export function ContactForm() {
-  const [state, formAction, isPending] = useActionState(submitContactForm, initialState);
+  const [state, formAction, isPending] = useActionState(
+    submitContactForm,
+    initialState
+  );
 
   useEffect(() => {
     if (state.message) {

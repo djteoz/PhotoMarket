@@ -27,10 +27,11 @@ export async function submitContactForm(prevState: any, formData: FormData) {
     });
 
     revalidatePath("/contacts");
-    
+
     return {
       success: true,
-      message: "Ваше сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.",
+      message:
+        "Ваше сообщение успешно отправлено! Мы свяжемся с вами в ближайшее время.",
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
