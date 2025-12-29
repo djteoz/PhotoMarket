@@ -183,7 +183,10 @@ export default async function StudioPage({
                               Выберите дату и время для бронирования.
                             </DialogDescription>
                           </DialogHeader>
-                          <BookingForm roomId={room.id} pricePerHour={Number(room.pricePerHour)} />
+                          <BookingForm
+                            roomId={room.id}
+                            pricePerHour={Number(room.pricePerHour)}
+                          />
                         </DialogContent>
                       </Dialog>
                     </div>
