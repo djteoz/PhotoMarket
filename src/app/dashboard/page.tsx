@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, MapPin } from "lucide-react";
+import { Studio } from "@prisma/client";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -67,7 +68,7 @@ export default async function DashboardPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dbUser.studios.map((studio) => (
+          {dbUser.studios.map((studio: Studio) => (
             <Card key={studio.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle>{studio.name}</CardTitle>
