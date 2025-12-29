@@ -57,13 +57,13 @@ export default async function SearchPage({
 
   if (minPrice) {
     roomWhere.pricePerHour = {
-      ...roomWhere.pricePerHour,
+      ...(typeof roomWhere.pricePerHour === 'object' ? roomWhere.pricePerHour : {}),
       gte: Number(minPrice),
     };
   }
   if (maxPrice) {
     roomWhere.pricePerHour = {
-      ...roomWhere.pricePerHour,
+      ...(typeof roomWhere.pricePerHour === 'object' ? roomWhere.pricePerHour : {}),
       lte: Number(maxPrice),
     };
   }
