@@ -13,6 +13,14 @@ import Image from "next/image";
 import { SearchHero } from "@/components/search/search-hero";
 import { SearchFilters } from "@/components/search/search-filters";
 import { Prisma } from "@prisma/client";
+import dynamic from "next/dynamic";
+
+const SearchMap = dynamic(() => import("@/components/search/search-map"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] w-full bg-gray-100 rounded-lg animate-pulse mb-6" />
+  ),
+});
 
 export default async function SearchPage({
   searchParams,
@@ -57,13 +65,17 @@ export default async function SearchPage({
 
   if (minPrice) {
     roomWhere.pricePerHour = {
-      ...(typeof roomWhere.pricePerHour === 'object' ? roomWhere.pricePerHour : {}),
+      ...(typeof roomWhere.pricePerHour === "object"
+        ? roomWhere.pricePerHour
+        : {}),
       gte: Number(minPrice),
     };
   }
   if (maxPrice) {
     roomWhere.pricePerHour = {
-      ...(typeof roomWhere.pricePerHour === 'object' ? roomWhere.pricePerHour : {}),
+      ...(typeof roomWhere.pricePerHour === "object"
+        ? roomWhere.pricePerHour
+        : {}),
       lte: Number(maxPrice),
     };
   }
@@ -108,6 +120,8 @@ export default async function SearchPage({
 
         {/* Results Grid */}
         <div className="lg:col-span-3">
+          <SearchMap studios={studios} />
+
           {studios.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
               <p className="text-xl text-gray-500">
