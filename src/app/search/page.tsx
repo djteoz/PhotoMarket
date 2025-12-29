@@ -13,14 +13,7 @@ import Image from "next/image";
 import { SearchHero } from "@/components/search/search-hero";
 import { SearchFilters } from "@/components/search/search-filters";
 import { Prisma } from "@prisma/client";
-import dynamic from "next/dynamic";
-
-const SearchMap = dynamic(() => import("@/components/search/search-map"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-[400px] w-full bg-gray-100 rounded-lg animate-pulse mb-6" />
-  ),
-});
+import SearchMap from "@/components/search/search-map-wrapper";
 
 export default async function SearchPage({
   searchParams,
