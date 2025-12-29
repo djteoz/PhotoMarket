@@ -12,11 +12,11 @@ export default function PricingPage() {
         "Поиск студий",
         "Просмотр контактов",
         "Добавление 1 студии",
-        "Базовая поддержка"
+        "Базовая поддержка",
       ],
       buttonText: "Начать бесплатно",
       href: "/sign-up",
-      popular: false
+      popular: false,
     },
     {
       name: "Профессионал",
@@ -28,11 +28,11 @@ export default function PricingPage() {
         "Добавление до 5 студий",
         "Приоритет в поиске",
         "Расширенная статистика",
-        "Личный менеджер"
+        "Личный менеджер",
       ],
       buttonText: "Выбрать тариф",
       href: "/sign-up?plan=pro",
-      popular: true
+      popular: true,
     },
     {
       name: "Бизнес",
@@ -44,12 +44,12 @@ export default function PricingPage() {
         "Неограниченное кол-во студий",
         "API доступ",
         "Интеграция с CRM",
-        "Премиум поддержка 24/7"
+        "Премиум поддержка 24/7",
       ],
       buttonText: "Связаться с нами",
       href: "/contacts",
-      popular: false
-    }
+      popular: false,
+    },
   ];
 
   return (
@@ -57,13 +57,14 @@ export default function PricingPage() {
       <div className="text-center mb-12">
         <h1 className="text-3xl font-bold mb-4">Тарифные планы</h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Выберите подходящий тариф для развития вашего бизнеса. Прозрачные условия, никаких скрытых платежей.
+          Выберите подходящий тариф для развития вашего бизнеса. Прозрачные
+          условия, никаких скрытых платежей.
         </p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {plans.map((plan) => (
-          <div 
+          <div
             key={plan.name}
             className={`relative rounded-xl border bg-card p-8 shadow-sm flex flex-col ${
               plan.popular ? "border-primary ring-1 ring-primary shadow-md" : ""
@@ -74,14 +75,18 @@ export default function PricingPage() {
                 Популярный
               </div>
             )}
-            
+
             <div className="mb-6">
               <h3 className="text-xl font-semibold mb-2">{plan.name}</h3>
               <div className="flex items-baseline gap-1">
                 <span className="text-3xl font-bold">{plan.price}</span>
-                {plan.period && <span className="text-muted-foreground">{plan.period}</span>}
+                {plan.period && (
+                  <span className="text-muted-foreground">{plan.period}</span>
+                )}
               </div>
-              <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                {plan.description}
+              </p>
             </div>
 
             <ul className="space-y-3 mb-8 flex-1">
@@ -93,7 +98,11 @@ export default function PricingPage() {
               ))}
             </ul>
 
-            <Button asChild variant={plan.popular ? "default" : "outline"} className="w-full">
+            <Button
+              asChild
+              variant={plan.popular ? "default" : "outline"}
+              className="w-full"
+            >
               <Link href={plan.href}>{plan.buttonText}</Link>
             </Button>
           </div>
