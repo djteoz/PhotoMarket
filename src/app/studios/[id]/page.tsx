@@ -16,6 +16,10 @@ import { currentUser } from "@clerk/nextjs/server";
 import { FavoriteButton } from "@/components/studios/favorite-button";
 import Link from "next/link";
 
+import { AddReviewForm } from "@/components/reviews/add-review-form";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
+
 export default async function StudioPage({
   params,
 }: {
@@ -28,7 +32,14 @@ export default async function StudioPage({
     where: { id },
     include: {
       rooms: true,
-      reviews: true,
+      reviews: {
+        include: {
+          user: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
       owner: true,
     },
   });
@@ -37,12 +48,21 @@ export default async function StudioPage({
     notFound();
   }
 
+  const averageRating =
+    studio.reviews.length > 0
+      ? studio.reviews.reduce((acc, review) => acc + review.rating, 0) /
+        studio.reviews.length
+      : 0;
+
   let isFavorite = false;
   if (user) {
     const favorite = await prisma.favorite.findUnique({
       where: {
         userId_studioId: {
-          userId: (await prisma.user.findUnique({ where: { clerkId: user.id } }))?.id || "",
+          userId:
+            (
+              await prisma.user.findUnique({ where: { clerkId: user.id } })
+            )?.id || "",
           studioId: studio.id,
         },
       },
@@ -65,7 +85,8 @@ export default async function StudioPage({
             </span>
             <span className="flex items-center gap-1">
               <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              4.9 (12 отзывов)
+              {averageRating > 0 ? averageRating.toFixed(1) : "Нет оценок"} (
+              {studio.reviews.length} отзывов)
             </span>
           </div>
         </div>
@@ -199,7 +220,9 @@ export default async function StudioPage({
                     <div className="ml-auto self-center flex flex-col gap-2">
                       {isOwner && (
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/studios/${studio.id}/rooms/${room.id}/edit`}>
+                          <Link
+                            href={`/studios/${studio.id}/rooms/${room.id}/edit`}
+                          >
                             <Edit className="h-3 w-3 mr-1" /> Ред.
                           </Link>
                         </Button>
@@ -230,6 +253,76 @@ export default async function StudioPage({
                 В этой студии пока нет добавленных залов.
               </p>
             )}
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mb-4">Отзывы</h2>
+
+            {user && !isOwner && (
+              <div className="mb-8">
+                <AddReviewForm studioId={studio.id} />
+              </div>
+            )}
+
+            <div className="space-y-6">
+              {studio.reviews.length > 0 ? (
+                studio.reviews.map((review) => (
+                  <div key={review.id} className="border-b pb-6 last:border-0">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                          {review.user.image ? (
+                            <Image
+                              src={review.user.image}
+                              alt={review.user.name || "User"}
+                              width={32}
+                              height={32}
+                            />
+                          ) : (
+                            <span className="text-xs font-bold text-gray-500">
+                              {(review.user.name ||
+                                review.user.email ||
+                                "U")[0].toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">
+                            {review.user.name || "Пользователь"}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {format(review.createdAt, "d MMMM yyyy", {
+                              locale: ru,
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`h-4 w-4 ${
+                              star <= review.rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {review.comment && (
+                      <p className="text-gray-600 text-sm mt-2">
+                        {review.comment}
+                      </p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500">
+                  Отзывов пока нет. Будьте первым!
+                </p>
+              )}
+            </div>
           </section>
         </div>
 

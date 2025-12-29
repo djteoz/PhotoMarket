@@ -196,7 +196,11 @@ export function AddStudioForm({ initialData }: StudioFormProps) {
         />
 
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Сохранение..." : initialData ? "Сохранить изменения" : "Создать студию"}
+          {isPending
+            ? "Сохранение..."
+            : initialData
+            ? "Сохранить изменения"
+            : "Создать студию"}
         </Button>
       </form>
     </Form>

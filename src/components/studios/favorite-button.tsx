@@ -35,7 +35,7 @@ export function FavoriteButton({
         // Revert on error
         setIsFavorite((prev) => !prev);
         if (result.error === "Unauthorized") {
-            router.push("/sign-in");
+          router.push("/sign-in");
         }
       }
     });

@@ -89,13 +89,19 @@ export default async function CatalogPage({
               {studios.map((studio) => {
                 const minStudioPrice =
                   studio.rooms.length > 0
-                    ? Math.min(...studio.rooms.map((r) => Number(r.pricePerHour)))
+                    ? Math.min(
+                        ...studio.rooms.map((r) => Number(r.pricePerHour))
+                      )
                     : null;
-                
+
                 const isFavorite = favoriteIds.includes(studio.id);
 
                 return (
-                  <Link href={`/studios/${studio.id}`} key={studio.id} className="group relative block h-full">
+                  <Link
+                    href={`/studios/${studio.id}`}
+                    key={studio.id}
+                    className="group relative block h-full"
+                  >
                     <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
                       <div className="relative h-48 bg-gray-200">
                         {studio.images[0] ? (
@@ -111,7 +117,11 @@ export default async function CatalogPage({
                           </div>
                         )}
                         <div className="absolute top-2 right-2 z-10">
-                           <FavoriteButton studioId={studio.id} initialIsFavorite={isFavorite} isIconOnly />
+                          <FavoriteButton
+                            studioId={studio.id}
+                            initialIsFavorite={isFavorite}
+                            isIconOnly
+                          />
                         </div>
                         <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />

@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import Image from "next/image";
+import { BookingActions } from "@/components/booking/booking-actions";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -111,9 +112,12 @@ export default async function DashboardPage() {
         <TabsContent value="studios" className="space-y-4">
           {dbUser.studios.length === 0 ? (
             <div className="text-center py-12 border-2 border-dashed rounded-lg">
-              <h3 className="text-lg font-medium mb-2">У вас пока нет студий</h3>
+              <h3 className="text-lg font-medium mb-2">
+                У вас пока нет студий
+              </h3>
               <p className="text-gray-500 mb-4">
-                Добавьте свою первую студию, чтобы начать принимать бронирования.
+                Добавьте свою первую студию, чтобы начать принимать
+                бронирования.
               </p>
               <Link href="/add-studio">
                 <Button variant="outline">Добавить студию</Button>
@@ -122,7 +126,10 @@ export default async function DashboardPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {dbUser.studios.map((studio: Studio) => (
-                <Card key={studio.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={studio.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardHeader>
                     <CardTitle>{studio.name}</CardTitle>
                     <div className="flex items-center text-gray-500 text-sm gap-1">
@@ -145,7 +152,9 @@ export default async function DashboardPage() {
                           <Link href={`/studios/${studio.id}`}>Просмотр</Link>
                         </Button>
                         <Button size="sm" className="w-full" asChild>
-                          <Link href={`/studios/${studio.id}/edit`}>Редактировать</Link>
+                          <Link href={`/studios/${studio.id}/edit`}>
+                            Редактировать
+                          </Link>
                         </Button>
                       </div>
                       <Button
@@ -186,11 +195,14 @@ export default async function DashboardPage() {
                       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-gray-500 mt-1">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {format(booking.startTime, "d MMMM yyyy", { locale: ru })}
+                          {format(booking.startTime, "d MMMM yyyy", {
+                            locale: ru,
+                          })}
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {format(booking.startTime, "HH:mm")} - {format(booking.endTime, "HH:mm")}
+                          {format(booking.startTime, "HH:mm")} -{" "}
+                          {format(booking.endTime, "HH:mm")}
                         </span>
                       </div>
                     </div>
@@ -203,6 +215,11 @@ export default async function DashboardPage() {
                           {booking.status.toLowerCase()}
                         </div>
                       </div>
+                      <BookingActions
+                        bookingId={booking.id}
+                        status={booking.status}
+                        isOwner={false}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -222,20 +239,21 @@ export default async function DashboardPage() {
                 <Card key={booking.id}>
                   <CardContent className="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                      <h3 className="font-bold text-lg">
-                        {booking.room.name}
-                      </h3>
+                      <h3 className="font-bold text-lg">{booking.room.name}</h3>
                       <p className="text-sm text-gray-500">
                         Клиент: {booking.user.name || booking.user.email}
                       </p>
                       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-gray-500 mt-1">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {format(booking.startTime, "d MMMM yyyy", { locale: ru })}
+                          {format(booking.startTime, "d MMMM yyyy", {
+                            locale: ru,
+                          })}
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {format(booking.startTime, "HH:mm")} - {format(booking.endTime, "HH:mm")}
+                          {format(booking.startTime, "HH:mm")} -{" "}
+                          {format(booking.endTime, "HH:mm")}
                         </span>
                       </div>
                     </div>
@@ -248,12 +266,11 @@ export default async function DashboardPage() {
                           {booking.status.toLowerCase()}
                         </div>
                       </div>
-                      {booking.status === "PENDING" && (
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="default">Подтвердить</Button>
-                          <Button size="sm" variant="destructive">Отклонить</Button>
-                        </div>
-                      )}
+                      <BookingActions
+                        bookingId={booking.id}
+                        status={booking.status}
+                        isOwner={true}
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -275,11 +292,17 @@ export default async function DashboardPage() {
               {dbUser.favorites.map(({ studio }) => {
                 const minStudioPrice =
                   studio.rooms.length > 0
-                    ? Math.min(...studio.rooms.map((r) => Number(r.pricePerHour)))
+                    ? Math.min(
+                        ...studio.rooms.map((r) => Number(r.pricePerHour))
+                      )
                     : null;
 
                 return (
-                  <Link href={`/studios/${studio.id}`} key={studio.id} className="group relative block h-full">
+                  <Link
+                    href={`/studios/${studio.id}`}
+                    key={studio.id}
+                    className="group relative block h-full"
+                  >
                     <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
                       <div className="relative h-48 bg-gray-200">
                         {studio.images[0] ? (
@@ -295,10 +318,10 @@ export default async function DashboardPage() {
                           </div>
                         )}
                         <div className="absolute top-2 right-2 z-10">
-                           {/* We pass true because we are in favorites tab */}
-                           <div className="bg-white rounded-full">
-                             <Star className="h-5 w-5 fill-red-500 text-red-500 p-1" />
-                           </div>
+                          {/* We pass true because we are in favorites tab */}
+                          <div className="bg-white rounded-full">
+                            <Star className="h-5 w-5 fill-red-500 text-red-500 p-1" />
+                          </div>
                         </div>
                         <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />

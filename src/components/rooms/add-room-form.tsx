@@ -233,7 +233,11 @@ export function AddRoomForm({ studioId, initialData }: RoomFormProps) {
         />
 
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Сохранение..." : initialData ? "Сохранить изменения" : "Создать зал"}
+          {isPending
+            ? "Сохранение..."
+            : initialData
+            ? "Сохранить изменения"
+            : "Создать зал"}
         </Button>
       </form>
     </Form>

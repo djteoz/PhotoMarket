@@ -26,30 +26,30 @@ export function CatalogFilters() {
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border space-y-4">
       <h3 className="font-bold text-lg">Фильтры</h3>
-      
+
       <div className="space-y-2">
         <Label>Город</Label>
-        <Input 
-          placeholder="Москва" 
-          value={city} 
-          onChange={(e) => setCity(e.target.value)} 
+        <Input
+          placeholder="Москва"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
         />
       </div>
 
       <div className="space-y-2">
         <Label>Цена (₽/час)</Label>
         <div className="flex gap-2">
-          <Input 
-            placeholder="От" 
-            type="number" 
-            value={minPrice} 
-            onChange={(e) => setMinPrice(e.target.value)} 
+          <Input
+            placeholder="От"
+            type="number"
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
           />
-          <Input 
-            placeholder="До" 
-            type="number" 
-            value={maxPrice} 
-            onChange={(e) => setMaxPrice(e.target.value)} 
+          <Input
+            placeholder="До"
+            type="number"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
           />
         </div>
       </div>
@@ -57,11 +57,11 @@ export function CatalogFilters() {
       <Button className="w-full" onClick={handleSearch}>
         Применить
       </Button>
-      
+
       {(city || minPrice || maxPrice) && (
-        <Button 
-          variant="outline" 
-          className="w-full" 
+        <Button
+          variant="outline"
+          className="w-full"
           onClick={() => {
             setCity("");
             setMinPrice("");

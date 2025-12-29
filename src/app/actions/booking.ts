@@ -76,12 +76,78 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
         startTime: startDateTime,
         endTime: endDateTime,
         totalPrice,
-        status: "CONFIRMED", // В реальном приложении сначала PENDING, потом оплата
+        status: "PENDING",
       },
     });
   } catch (error) {
     console.error("Failed to create booking:", error);
     return { error: "Failed to create booking" };
+  }
+
+  return { success: true };
+}
+
+export async function updateBookingStatus(
+  bookingId: string,
+  status: "CONFIRMED" | "CANCELLED" | "COMPLETED"
+) {
+  const user = await currentUser();
+
+  if (!user) {
+    return { error: "Unauthorized" };
+  }
+
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      room: {
+        include: {
+          studio: {
+            include: {
+              owner: true,
+            },
+          },
+        },
+      },
+      user: true, // The user who made the booking
+    },
+  });
+
+  if (!booking) {
+    return { error: "Booking not found" };
+  }
+
+  // Check permissions
+  // Owner can change any status
+  // User can only CANCEL their own booking if it's not completed
+  const isOwner = booking.room.studio.owner.clerkId === user.id;
+  const isBooker = booking.user.clerkId === user.id;
+
+  if (!isOwner && !isBooker) {
+    return { error: "Unauthorized" };
+  }
+
+  if (isBooker && !isOwner) {
+    if (status !== "CANCELLED") {
+      return { error: "You can only cancel your own booking" };
+    }
+    if (booking.status === "COMPLETED" || booking.status === "CANCELLED") {
+      return { error: "Cannot cancel completed or already cancelled booking" };
+    }
+  }
+
+  try {
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status },
+    });
+
+    // Revalidate paths
+    // We can't easily revalidate everything, but dashboard is key
+    // revalidatePath("/dashboard"); // This needs to be imported if used, but actions run on server so we usually rely on client router refresh or revalidatePath
+  } catch (error) {
+    console.error("Failed to update booking status:", error);
+    return { error: "Failed to update status" };
   }
 
   return { success: true };

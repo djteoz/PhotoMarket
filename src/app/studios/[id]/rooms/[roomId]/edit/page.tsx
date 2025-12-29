@@ -45,9 +45,7 @@ export default async function EditRoomPage({
         <Card>
           <CardHeader>
             <CardTitle>Редактировать зал "{room.name}"</CardTitle>
-            <CardDescription>
-              Измените информацию о зале.
-            </CardDescription>
+            <CardDescription>Измените информацию о зале.</CardDescription>
           </CardHeader>
           <CardContent>
             <AddRoomForm studioId={id} initialData={room} />
