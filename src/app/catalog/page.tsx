@@ -1,0 +1,91 @@
+import { prisma } from "@/lib/prisma";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { MapPin, Star } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+
+export default async function CatalogPage() {
+  const studios = await prisma.studio.findMany({
+    include: {
+      rooms: true,
+      reviews: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-4">Каталог студий</h1>
+        <p className="text-gray-600">
+          Все доступные фотостудии для бронирования.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {studios.map((studio) => {
+          const minStudioPrice =
+            studio.rooms.length > 0
+              ? Math.min(...studio.rooms.map((r) => Number(r.pricePerHour)))
+              : null;
+
+          return (
+            <Link href={`/studios/${studio.id}`} key={studio.id}>
+              <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
+                <div className="relative h-48 bg-gray-200">
+                  {studio.images[0] ? (
+                    <Image
+                      src={studio.images[0]}
+                      alt={studio.name}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      Нет фото
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                    4.9
+                  </div>
+                </div>
+                <CardHeader>
+                  <CardTitle className="flex justify-between items-start">
+                    <span>{studio.name}</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex-1">
+                  <div className="flex items-center text-gray-500 text-sm mb-2">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    {studio.city}
+                  </div>
+                  <p className="text-sm text-gray-600 line-clamp-2">
+                    {studio.description}
+                  </p>
+
+                  {minStudioPrice !== null && (
+                    <div className="mt-4 font-semibold text-primary">
+                      от {minStudioPrice} ₽/час
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="border-t pt-4 text-sm text-gray-500">
+                  {studio.rooms.length} залов
+                </CardFooter>
+              </Card>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
