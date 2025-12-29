@@ -17,7 +17,7 @@ export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
     orderBy: { createdAt: "desc" },
   });
-  
+
   const user = await currentUser();
   const currentUserId = user?.id;
 
@@ -43,7 +43,13 @@ export default async function AdminUsersPage() {
               <TableRow key={u.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
-                    {u.image && <img src={u.image} alt="" className="w-6 h-6 rounded-full" />}
+                    {u.image && (
+                      <img
+                        src={u.image}
+                        alt=""
+                        className="w-6 h-6 rounded-full"
+                      />
+                    )}
                     <span>{u.name}</span>
                   </div>
                 </TableCell>
@@ -58,7 +64,7 @@ export default async function AdminUsersPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   {u.clerkId !== currentUserId && (
-                     <DeleteUserButton userId={u.id} />
+                    <DeleteUserButton userId={u.id} />
                   )}
                 </TableCell>
               </TableRow>

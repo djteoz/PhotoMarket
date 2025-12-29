@@ -10,7 +10,11 @@ export function DeleteUserButton({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
-    if (!confirm("Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить.")) {
+    if (
+      !confirm(
+        "Вы уверены, что хотите удалить этого пользователя? Это действие нельзя отменить."
+      )
+    ) {
       return;
     }
 
@@ -26,8 +30,18 @@ export function DeleteUserButton({ userId }: { userId: string }) {
   };
 
   return (
-    <Button variant="ghost" size="icon" onClick={handleDelete} disabled={loading} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleDelete}
+      disabled={loading}
+      className="text-red-500 hover:text-red-600 hover:bg-red-50"
+    >
+      {loading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Trash2 className="h-4 w-4" />
+      )}
     </Button>
   );
 }

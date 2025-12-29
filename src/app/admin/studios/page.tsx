@@ -45,7 +45,9 @@ export default async function AdminStudiosPage() {
                 <TableCell>
                   <div className="flex flex-col">
                     <span>{studio.owner.name}</span>
-                    <span className="text-xs text-muted-foreground">{studio.owner.email}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {studio.owner.email}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -65,7 +67,10 @@ export default async function AdminStudiosPage() {
             ))}
             {studios.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell
+                  colSpan={5}
+                  className="text-center py-8 text-muted-foreground"
+                >
                   Студий пока нет
                 </TableCell>
               </TableRow>
