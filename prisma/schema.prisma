@@ -1,0 +1,125 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  OWNER
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique // External Auth ID from Clerk
+  email     String   @unique
+  name      String?
+  image     String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studios   Studio[]
+  bookings  Booking[]
+  reviews   Review[]
+  favorites Favorite[]
+}
+
+model Studio {
+  id          String   @id @default(cuid())
+  ownerId     String
+  owner       User     @relation(fields: [ownerId], references: [id])
+  name        String
+  description String?
+  address     String
+  city        String
+  lat         Float?
+  lng         Float?
+  phone       String?
+  email       String?
+  images      String[] // URLs
+  
+  rooms       Room[]
+  reviews     Review[]
+  favorites   Favorite[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Room {
+  id              String   @id @default(cuid())
+  studioId        String
+  studio          Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  pricePerHour    Decimal
+  area            Float    // sq meters
+  capacity        Int?
+  hasNaturalLight Boolean  @default(false)
+  
+  images          String[]
+  amenities       Amenity[] // Many-to-many
+  bookings        Booking[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Amenity {
+  id    String @id @default(cuid())
+  name  String @unique
+  rooms Room[]
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id])
+  roomId    String
+  room      Room          @relation(fields: [roomId], references: [id])
+  startTime DateTime
+  endTime   DateTime
+  totalPrice Decimal
+  status    BookingStatus @default(PENDING)
+  
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  studioId  String
+  studio    Studio   @relation(fields: [studioId], references: [id])
+  
+  createdAt DateTime @default(now())
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  studioId  String
+  studio    Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  @@unique([userId, studioId])
+}
