@@ -66,3 +66,53 @@ export async function createStudio(formData: z.infer<typeof studioSchema>) {
 
   redirect("/dashboard");
 }
+
+export async function updateStudio(
+  studioId: string,
+  formData: z.infer<typeof studioSchema>
+) {
+  const user = await currentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const studio = await prisma.studio.findUnique({
+    where: { id: studioId },
+    include: { owner: true },
+  });
+
+  if (!studio) {
+    return { error: "Studio not found" };
+  }
+
+  if (studio.owner.clerkId !== user.id) {
+    return { error: "Unauthorized" };
+  }
+
+  const validatedFields = studioSchema.safeParse(formData);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields" };
+  }
+
+  const { name, description, address, city, images } = validatedFields.data;
+
+  try {
+    await prisma.studio.update({
+      where: { id: studioId },
+      data: {
+        name,
+        description,
+        address,
+        city,
+        images: images || [],
+      },
+    });
+  } catch (error) {
+    console.error("Failed to update studio:", error);
+    return { error: "Failed to update studio" };
+  }
+
+  redirect("/dashboard");
+}

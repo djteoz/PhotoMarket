@@ -78,3 +78,63 @@ export async function createRoom(
 
   redirect(`/studios/${studioId}`);
 }
+
+export async function updateRoom(
+  roomId: string,
+  formData: z.infer<typeof roomSchema>
+) {
+  const user = await currentUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+    include: { studio: { include: { owner: true } } },
+  });
+
+  if (!room) {
+    return { error: "Room not found" };
+  }
+
+  if (room.studio.owner.clerkId !== user.id) {
+    return { error: "Unauthorized" };
+  }
+
+  const validatedFields = roomSchema.safeParse(formData);
+
+  if (!validatedFields.success) {
+    return { error: "Invalid fields" };
+  }
+
+  const {
+    name,
+    description,
+    pricePerHour,
+    area,
+    capacity,
+    hasNaturalLight,
+    images,
+  } = validatedFields.data;
+
+  try {
+    await prisma.room.update({
+      where: { id: roomId },
+      data: {
+        name,
+        description,
+        pricePerHour,
+        area,
+        capacity,
+        hasNaturalLight,
+        images: images || [],
+      },
+    });
+  } catch (error) {
+    console.error("Failed to update room:", error);
+    return { error: "Failed to update room" };
+  }
+
+  redirect(`/studios/${room.studioId}`);
+}

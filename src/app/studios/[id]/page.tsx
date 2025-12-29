@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Share, Heart } from "lucide-react";
+import { MapPin, Star, Share, Edit } from "lucide-react";
 import Image from "next/image";
 import { BookingForm } from "@/components/booking/booking-form";
 import {
@@ -12,12 +12,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { currentUser } from "@clerk/nextjs/server";
+import { FavoriteButton } from "@/components/studios/favorite-button";
+import Link from "next/link";
 
 export default async function StudioPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  const user = await currentUser();
   const { id } = await params;
 
   const studio = await prisma.studio.findUnique({
@@ -25,12 +29,28 @@ export default async function StudioPage({
     include: {
       rooms: true,
       reviews: true,
+      owner: true,
     },
   });
 
   if (!studio) {
     notFound();
   }
+
+  let isFavorite = false;
+  if (user) {
+    const favorite = await prisma.favorite.findUnique({
+      where: {
+        userId_studioId: {
+          userId: (await prisma.user.findUnique({ where: { clerkId: user.id } }))?.id || "",
+          studioId: studio.id,
+        },
+      },
+    });
+    isFavorite = !!favorite;
+  }
+
+  const isOwner = user?.id === studio.owner.clerkId;
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -50,12 +70,17 @@ export default async function StudioPage({
           </div>
         </div>
         <div className="flex gap-2">
+          {isOwner && (
+            <Button variant="outline" asChild>
+              <Link href={`/studios/${studio.id}/edit`}>
+                <Edit className="h-4 w-4 mr-2" /> Редактировать
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" size="icon">
             <Share className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
-            <Heart className="h-4 w-4" />
-          </Button>
+          <FavoriteButton studioId={studio.id} initialIsFavorite={isFavorite} />
         </div>
       </div>
 
@@ -171,7 +196,14 @@ export default async function StudioPage({
                         </span>
                       )}
                     </div>
-                    <div className="ml-auto self-center">
+                    <div className="ml-auto self-center flex flex-col gap-2">
+                      {isOwner && (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/studios/${studio.id}/rooms/${room.id}/edit`}>
+                            <Edit className="h-3 w-3 mr-1" /> Ред.
+                          </Link>
+                        </Button>
+                      )}
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button>Забронировать</Button>

@@ -11,12 +11,15 @@ import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
 import { CatalogFilters } from "@/components/catalog/filters";
+import { currentUser } from "@clerk/nextjs/server";
+import { FavoriteButton } from "@/components/studios/favorite-button";
 
 export default async function CatalogPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const user = await currentUser();
   const { city, minPrice, maxPrice } = await searchParams;
 
   const where: any = {};
@@ -46,6 +49,17 @@ export default async function CatalogPage({
       createdAt: "desc",
     },
   });
+
+  let favoriteIds: string[] = [];
+  if (user) {
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkId: user.id },
+      include: { favorites: true },
+    });
+    if (dbUser) {
+      favoriteIds = dbUser.favorites.map((f) => f.studioId);
+    }
+  }
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -77,9 +91,11 @@ export default async function CatalogPage({
                   studio.rooms.length > 0
                     ? Math.min(...studio.rooms.map((r) => Number(r.pricePerHour)))
                     : null;
+                
+                const isFavorite = favoriteIds.includes(studio.id);
 
                 return (
-                  <Link href={`/studios/${studio.id}`} key={studio.id}>
+                  <Link href={`/studios/${studio.id}`} key={studio.id} className="group relative block h-full">
                     <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
                       <div className="relative h-48 bg-gray-200">
                         {studio.images[0] ? (
@@ -94,7 +110,10 @@ export default async function CatalogPage({
                             Нет фото
                           </div>
                         )}
-                        <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                        <div className="absolute top-2 right-2 z-10">
+                           <FavoriteButton studioId={studio.id} initialIsFavorite={isFavorite} isIconOnly />
+                        </div>
+                        <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                           4.9
                         </div>

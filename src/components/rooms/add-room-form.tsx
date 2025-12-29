@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { createRoom } from "@/app/actions/room";
+import { createRoom, updateRoom } from "@/app/actions/room";
 import { useTransition, useState } from "react";
 import { UploadButton } from "@/lib/uploadthing";
 import Image from "next/image";
@@ -37,30 +37,44 @@ const formSchema = z.object({
   images: z.array(z.string()).optional(),
 });
 
-interface AddRoomFormProps {
+interface RoomFormProps {
   studioId: string;
+  initialData?: {
+    id: string;
+    name: string;
+    description: string | null;
+    pricePerHour: any; // Decimal
+    area: number;
+    capacity: number | null;
+    hasNaturalLight: boolean;
+    images: string[];
+  };
 }
 
-export function AddRoomForm({ studioId }: AddRoomFormProps) {
+export function AddRoomForm({ studioId, initialData }: RoomFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>(initialData?.images || []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      pricePerHour: 0,
-      area: 0,
-      capacity: 0,
-      hasNaturalLight: false,
-      images: [],
+      name: initialData?.name || "",
+      description: initialData?.description || "",
+      pricePerHour: initialData ? Number(initialData.pricePerHour) : 0,
+      area: initialData?.area || 0,
+      capacity: initialData?.capacity || 0,
+      hasNaturalLight: initialData?.hasNaturalLight || false,
+      images: initialData?.images || [],
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-      await createRoom(studioId, { ...values, images });
+      if (initialData) {
+        await updateRoom(initialData.id, { ...values, images });
+      } else {
+        await createRoom(studioId, { ...values, images });
+      }
     });
   }
 
@@ -219,7 +233,7 @@ export function AddRoomForm({ studioId }: AddRoomFormProps) {
         />
 
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Создание..." : "Добавить зал"}
+          {isPending ? "Сохранение..." : initialData ? "Сохранить изменения" : "Создать зал"}
         </Button>
       </form>
     </Form>

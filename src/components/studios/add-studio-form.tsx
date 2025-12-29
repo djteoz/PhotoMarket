@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { createStudio } from "@/app/actions/studio";
+import { createStudio, updateStudio } from "@/app/actions/studio";
 import { useTransition } from "react";
 
 import { UploadButton } from "@/lib/uploadthing";
@@ -37,24 +37,39 @@ const formSchema = z.object({
   images: z.array(z.string()).optional(),
 });
 
-export function AddStudioForm() {
+interface StudioFormProps {
+  initialData?: {
+    id: string;
+    name: string;
+    description: string | null;
+    city: string;
+    address: string;
+    images: string[];
+  };
+}
+
+export function AddStudioForm({ initialData }: StudioFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>(initialData?.images || []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      description: "",
-      city: "",
-      address: "",
-      images: [],
+      name: initialData?.name || "",
+      description: initialData?.description || "",
+      city: initialData?.city || "",
+      address: initialData?.address || "",
+      images: initialData?.images || [],
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
-      await createStudio({ ...values, images });
+      if (initialData) {
+        await updateStudio(initialData.id, { ...values, images });
+      } else {
+        await createStudio({ ...values, images });
+      }
     });
   }
 
@@ -181,7 +196,7 @@ export function AddStudioForm() {
         />
 
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Создание..." : "Добавить студию"}
+          {isPending ? "Сохранение..." : initialData ? "Сохранить изменения" : "Создать студию"}
         </Button>
       </form>
     </Form>
