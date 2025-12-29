@@ -31,14 +31,16 @@ export default function SearchMap({ studios }: SearchMapProps) {
   const center =
     validStudios.length > 0
       ? [
-          validStudios.reduce((sum, s) => sum + s.lat!, 0) / validStudios.length,
-          validStudios.reduce((sum, s) => sum + s.lng!, 0) / validStudios.length,
+          validStudios.reduce((sum, s) => sum + s.lat!, 0) /
+            validStudios.length,
+          validStudios.reduce((sum, s) => sum + s.lng!, 0) /
+            validStudios.length,
         ]
       : defaultCenter;
 
   return (
     <div className="h-[400px] w-full rounded-lg overflow-hidden border shadow-sm mb-6 relative z-0">
-      <YMaps>
+      <YMaps query={{ apikey: process.env.NEXT_PUBLIC_YANDEX_MAP_KEY }}>
         <Map
           defaultState={{ center: center, zoom: 10 }}
           width="100%"

@@ -13,7 +13,7 @@ export function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
-          <Link href="/studios" className="text-sm font-medium hover:underline">
+          <Link href="/catalog" className="text-sm font-medium hover:underline">
             Каталог студий
           </Link>
           <Link href="/about" className="text-sm font-medium hover:underline">
