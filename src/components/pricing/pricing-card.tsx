@@ -3,10 +3,20 @@
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SubscriptionPlan } from "@prisma/client";
-import { subscribe } from "@/app/actions/subscription";
-import { useTransition } from "react";
+import { createSubscriptionPayment } from "@/app/actions/subscription";
+import { useTransition, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface PricingCardProps {
   plan: {
@@ -22,8 +32,14 @@ interface PricingCardProps {
   isLoggedIn: boolean;
 }
 
-export function PricingCard({ plan, currentPlan, isLoggedIn }: PricingCardProps) {
+export function PricingCard({
+  plan,
+  currentPlan,
+  isLoggedIn,
+}: PricingCardProps) {
   const [isPending, startTransition] = useTransition();
+  const [selectedProvider, setSelectedProvider] = useState<"YOOKASSA" | "ROBOKASSA">("YOOKASSA");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
 
   const isCurrent = currentPlan === plan.planId;
@@ -35,16 +51,26 @@ export function PricingCard({ plan, currentPlan, isLoggedIn }: PricingCardProps)
     }
 
     if (plan.planId === "FREE") {
-        return; // Already free by default
+       // Handle downgrade or switch to free if needed
+       return; 
     }
+    
+    setIsDialogOpen(true);
+  };
 
+  const confirmPayment = () => {
     startTransition(async () => {
-      const result = await subscribe(plan.planId);
+      const result = await createSubscriptionPayment(plan.planId, selectedProvider);
+      
       if (result.error) {
         toast.error("Ошибка", { description: result.error });
+      } else if (result.redirectUrl) {
+        window.location.href = result.redirectUrl;
       } else {
-        toast.success("Успешно", { description: `Вы перешли на тариф ${plan.name}` });
+        // Should not happen for paid plans
+        toast.success("Успешно", { description: "Тариф изменен" });
         router.refresh();
+        setIsDialogOpen(false);
       }
     });
   };
@@ -69,9 +95,7 @@ export function PricingCard({ plan, currentPlan, isLoggedIn }: PricingCardProps)
             <span className="text-muted-foreground">{plan.period}</span>
           )}
         </div>
-        <p className="text-sm text-muted-foreground mt-2">
-          {plan.description}
-        </p>
+        <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
       </div>
 
       <ul className="space-y-3 mb-8 flex-1">
@@ -83,14 +107,47 @@ export function PricingCard({ plan, currentPlan, isLoggedIn }: PricingCardProps)
         ))}
       </ul>
 
-      <Button 
-        className="w-full" 
-        variant={plan.popular ? "default" : "outline"}
-        onClick={handleSubscribe}
-        disabled={isPending || isCurrent}
-      >
-        {isPending ? "Обработка..." : isCurrent ? "Текущий план" : "Выбрать тариф"}
-      </Button>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <Button
+            className="w-full"
+            variant={plan.popular ? "default" : "outline"}
+            onClick={handleSubscribe}
+            disabled={isPending || isCurrent}
+          >
+            {isPending
+              ? "Обработка..."
+              : isCurrent
+              ? "Текущий план"
+              : "Выбрать тариф"}
+          </Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Выберите способ оплаты</DialogTitle>
+            <DialogDescription>
+              Оплата тарифа "{plan.name}" на сумму {plan.price}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <RadioGroup value={selectedProvider} onValueChange={(v) => setSelectedProvider(v as any)}>
+              <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-gray-50">
+                <RadioGroupItem value="YOOKASSA" id="yookassa" />
+                <Label htmlFor="yookassa" className="flex-1 cursor-pointer font-medium">ЮKassa (Банковские карты, SberPay)</Label>
+              </div>
+              <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-gray-50">
+                <RadioGroupItem value="ROBOKASSA" id="robokassa" />
+                <Label htmlFor="robokassa" className="flex-1 cursor-pointer font-medium">Robokassa (Все способы)</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          <Button onClick={confirmPayment} disabled={isPending} className="w-full">
+            {isPending ? "Перенаправление..." : "Перейти к оплате"}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

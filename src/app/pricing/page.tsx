@@ -74,9 +74,9 @@ export default async function PricingPage() {
 
       <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
         {plans.map((plan) => (
-          <PricingCard 
-            key={plan.name} 
-            plan={plan} 
+          <PricingCard
+            key={plan.name}
+            plan={plan}
             currentPlan={currentPlan}
             isLoggedIn={!!user}
           />
