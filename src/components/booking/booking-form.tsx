@@ -24,7 +24,9 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState<string>("");
   const [duration, setDuration] = useState<string>("1");
-  const [bookedSlots, setBookedSlots] = useState<{ startTime: Date; endTime: Date }[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<
+    { startTime: Date; endTime: Date }[]
+  >([]);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -45,8 +47,8 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
     const [hours] = time.split(":").map(Number);
     const slotStart = new Date(date);
     slotStart.setHours(hours, 0, 0, 0);
-    
-    return bookedSlots.some(booking => {
+
+    return bookedSlots.some((booking) => {
       const bookingStart = new Date(booking.startTime);
       const bookingEnd = new Date(booking.endTime);
       return slotStart >= bookingStart && slotStart < bookingEnd;
@@ -68,13 +70,16 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
         toast.error(result.error);
       } else {
         toast.success("Бронирование успешно создано!");
-        setBookedSlots((prev) => [...prev, { 
+        setBookedSlots((prev) => [
+          ...prev,
+          {
             startTime: new Date(), // Placeholder, ideally fetch again
-            endTime: new Date() 
-        }]);
+            endTime: new Date(),
+          },
+        ]);
         // Refresh bookings
         if (date) {
-            getRoomBookings(roomId, date).then(setBookedSlots);
+          getRoomBookings(roomId, date).then(setBookedSlots);
         }
       }
     });

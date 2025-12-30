@@ -1,6 +1,12 @@
 "use client";
 
-import { YMaps, Map, Placemark, ZoomControl, Clusterer } from "@pbe/react-yandex-maps";
+import {
+  YMaps,
+  Map,
+  Placemark,
+  ZoomControl,
+  Clusterer,
+} from "@pbe/react-yandex-maps";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -69,7 +75,9 @@ export default function SearchMap({ studios }: SearchMapProps) {
                           : ""
                       }
                       <div style="flex: 1;">
-                        <div style="margin-bottom: 8px; font-size: 13px; color: #555;">${studio.city}</div>
+                        <div style="margin-bottom: 8px; font-size: 13px; color: #555;">${
+                          studio.city
+                        }</div>
                         <a href="/studios/${studio.id}" style="
                           display: inline-block;
                           padding: 6px 12px;
