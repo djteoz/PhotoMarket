@@ -104,7 +104,7 @@ export default async function StudioPage({ params }: Props) {
         studio.reviews.length
       : 0;
 
-  const isOwner = user?.id === studio.owner.clerkId;
+  const isOwner = user?.id === studio.owner.clerkId || dbUser?.role === "ADMIN";
 
   return (
     <div className="container mx-auto py-8 px-4">

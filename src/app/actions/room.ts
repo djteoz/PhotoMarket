@@ -38,7 +38,11 @@ export async function createRoom(
     throw new Error("Studio not found");
   }
 
-  if (studio.owner.clerkId !== user.id) {
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: user.id },
+  });
+
+  if (studio.owner.clerkId !== user.id && dbUser?.role !== "ADMIN") {
     throw new Error("Forbidden");
   }
 
@@ -98,7 +102,11 @@ export async function updateRoom(
     return { error: "Room not found" };
   }
 
-  if (room.studio.owner.clerkId !== user.id) {
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: user.id },
+  });
+
+  if (room.studio.owner.clerkId !== user.id && dbUser?.role !== "ADMIN") {
     return { error: "Unauthorized" };
   }
 

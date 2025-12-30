@@ -86,7 +86,11 @@ export async function updateStudio(
     return { error: "Studio not found" };
   }
 
-  if (studio.owner.clerkId !== user.id) {
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: user.id },
+  });
+
+  if (studio.owner.clerkId !== user.id && dbUser?.role !== "ADMIN") {
     return { error: "Unauthorized" };
   }
 

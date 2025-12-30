@@ -182,10 +182,15 @@ export async function updateBookingStatus(
     return { error: "Booking not found" };
   }
 
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: user.id },
+  });
+
   // Check permissions
   // Owner can change any status
   // User can only CANCEL their own booking if it's not completed
-  const isOwner = booking.room.studio.owner.clerkId === user.id;
+  const isOwner =
+    booking.room.studio.owner.clerkId === user.id || dbUser?.role === "ADMIN";
   const isBooker = booking.user.clerkId === user.id;
 
   if (!isOwner && !isBooker) {
