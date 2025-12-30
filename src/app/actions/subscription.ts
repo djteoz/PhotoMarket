@@ -13,7 +13,10 @@ const PLAN_PRICES = {
   BUSINESS: 2990,
 };
 
-export async function createSubscriptionPayment(plan: SubscriptionPlan, provider: "YOOKASSA" | "ROBOKASSA") {
+export async function createSubscriptionPayment(
+  plan: SubscriptionPlan,
+  provider: "YOOKASSA" | "ROBOKASSA"
+) {
   const user = await currentUser();
 
   if (!user || !user.id) {
@@ -30,13 +33,13 @@ export async function createSubscriptionPayment(plan: SubscriptionPlan, provider
 
   const amount = PLAN_PRICES[plan];
   if (amount === 0) {
-     // Free plan logic
-     await prisma.user.update({
-        where: { id: dbUser.id },
-        data: { subscriptionPlan: "FREE", subscriptionEndsAt: null }
-     });
-     revalidatePath("/pricing");
-     return { success: true };
+    // Free plan logic
+    await prisma.user.update({
+      where: { id: dbUser.id },
+      data: { subscriptionPlan: "FREE", subscriptionEndsAt: null },
+    });
+    revalidatePath("/pricing");
+    return { success: true };
   }
 
   try {
@@ -48,57 +51,56 @@ export async function createSubscriptionPayment(plan: SubscriptionPlan, provider
         provider: provider,
         status: "PENDING",
         plan: plan,
-      }
+      },
     });
 
     let redirectUrl = "";
 
     if (provider === "YOOKASSA") {
-      const returnUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/payment/callback/yookassa?paymentId=${payment.id}`;
+      const returnUrl = `${
+        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+      }/api/payment/callback/yookassa?paymentId=${payment.id}`;
       const yookassaPayment = await createYookassaPayment(
-        amount, 
-        `Подписка ${plan} для ${user.emailAddresses[0].emailAddress}`, 
+        amount,
+        `Подписка ${plan} для ${user.emailAddresses[0].emailAddress}`,
         returnUrl,
         { paymentId: payment.id, plan: plan, userId: dbUser.id }
       );
-      
+
       await prisma.payment.update({
         where: { id: payment.id },
-        data: { externalId: yookassaPayment.id }
+        data: { externalId: yookassaPayment.id },
       });
 
       redirectUrl = yookassaPayment.confirmation.confirmation_url;
-
     } else if (provider === "ROBOKASSA") {
-       // Robokassa uses integer ID usually, but we have UUID. 
-       // We can use the first 8 chars converted to int or just pass the UUID if allowed (Robokassa allows string InvId up to a limit, but usually expects int).
-       // For simplicity, let's assume we can pass the ID.
-       // Actually Robokassa InvId must be int < 2^31. We need a sequence or mapping.
-       // Let's use a timestamp-based ID for Robokassa InvId and store it.
-       
-       // Workaround: Use a short numeric ID or hash. 
-       // Better: Create a separate Int autoincrement field or just use timestamp + random.
-       // Let's use timestamp (last 9 digits)
-       const invId = Date.now().toString().slice(-9); 
-       
-       await prisma.payment.update({
-           where: { id: payment.id },
-           data: { externalId: invId }
-       });
+      // Robokassa uses integer ID usually, but we have UUID.
+      // We can use the first 8 chars converted to int or just pass the UUID if allowed (Robokassa allows string InvId up to a limit, but usually expects int).
+      // For simplicity, let's assume we can pass the ID.
+      // Actually Robokassa InvId must be int < 2^31. We need a sequence or mapping.
+      // Let's use a timestamp-based ID for Robokassa InvId and store it.
 
-       redirectUrl = generateRobokassaLink(
-           amount, 
-           invId, 
-           `Подписка ${plan}`, 
-           user.emailAddresses[0].emailAddress
-       );
+      // Workaround: Use a short numeric ID or hash.
+      // Better: Create a separate Int autoincrement field or just use timestamp + random.
+      // Let's use timestamp (last 9 digits)
+      const invId = Date.now().toString().slice(-9);
+
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { externalId: invId },
+      });
+
+      redirectUrl = generateRobokassaLink(
+        amount,
+        invId,
+        `Подписка ${plan}`,
+        user.emailAddresses[0].emailAddress
+      );
     }
 
     return { redirectUrl };
-
   } catch (error) {
     console.error("Payment creation error:", error);
     return { error: "Failed to initiate payment" };
   }
 }
-

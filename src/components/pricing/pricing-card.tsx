@@ -38,7 +38,9 @@ export function PricingCard({
   isLoggedIn,
 }: PricingCardProps) {
   const [isPending, startTransition] = useTransition();
-  const [selectedProvider, setSelectedProvider] = useState<"YOOKASSA" | "ROBOKASSA">("YOOKASSA");
+  const [selectedProvider, setSelectedProvider] = useState<
+    "YOOKASSA" | "ROBOKASSA"
+  >("YOOKASSA");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
 
@@ -51,17 +53,20 @@ export function PricingCard({
     }
 
     if (plan.planId === "FREE") {
-       // Handle downgrade or switch to free if needed
-       return; 
+      // Handle downgrade or switch to free if needed
+      return;
     }
-    
+
     setIsDialogOpen(true);
   };
 
   const confirmPayment = () => {
     startTransition(async () => {
-      const result = await createSubscriptionPayment(plan.planId, selectedProvider);
-      
+      const result = await createSubscriptionPayment(
+        plan.planId,
+        selectedProvider
+      );
+
       if (result.error) {
         toast.error("Ошибка", { description: result.error });
       } else if (result.redirectUrl) {
@@ -129,21 +134,38 @@ export function PricingCard({
               Оплата тарифа "{plan.name}" на сумму {plan.price}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
-            <RadioGroup value={selectedProvider} onValueChange={(v) => setSelectedProvider(v as any)}>
+            <RadioGroup
+              value={selectedProvider}
+              onValueChange={(v) => setSelectedProvider(v as any)}
+            >
               <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-gray-50">
                 <RadioGroupItem value="YOOKASSA" id="yookassa" />
-                <Label htmlFor="yookassa" className="flex-1 cursor-pointer font-medium">ЮKassa (Банковские карты, SberPay)</Label>
+                <Label
+                  htmlFor="yookassa"
+                  className="flex-1 cursor-pointer font-medium"
+                >
+                  ЮKassa (Банковские карты, SberPay)
+                </Label>
               </div>
               <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-gray-50">
                 <RadioGroupItem value="ROBOKASSA" id="robokassa" />
-                <Label htmlFor="robokassa" className="flex-1 cursor-pointer font-medium">Robokassa (Все способы)</Label>
+                <Label
+                  htmlFor="robokassa"
+                  className="flex-1 cursor-pointer font-medium"
+                >
+                  Robokassa (Все способы)
+                </Label>
               </div>
             </RadioGroup>
           </div>
 
-          <Button onClick={confirmPayment} disabled={isPending} className="w-full">
+          <Button
+            onClick={confirmPayment}
+            disabled={isPending}
+            className="w-full"
+          >
             {isPending ? "Перенаправление..." : "Перейти к оплате"}
           </Button>
         </DialogContent>

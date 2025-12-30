@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,10 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createBooking } from "@/app/actions/booking";
+import { createBooking, getRoomBookings } from "@/app/actions/booking";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { toast } from "sonner"; // Assuming sonner is installed or we use alert for now
+import { toast } from "sonner";
 
 interface BookingFormProps {
   roomId: string;
@@ -24,13 +24,34 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [startTime, setStartTime] = useState<string>("");
   const [duration, setDuration] = useState<string>("1");
+  const [bookedSlots, setBookedSlots] = useState<{ startTime: Date; endTime: Date }[]>([]);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (date) {
+      getRoomBookings(roomId, date).then(setBookedSlots);
+      setStartTime(""); // Reset time when date changes
+    }
+  }, [date, roomId]);
 
   // Генерируем доступные слоты времени (с 09:00 до 22:00)
   const timeSlots = Array.from({ length: 14 }, (_, i) => {
     const hour = i + 9;
     return `${hour.toString().padStart(2, "0")}:00`;
   });
+
+  const isTimeBlocked = (time: string) => {
+    if (!date) return true;
+    const [hours] = time.split(":").map(Number);
+    const slotStart = new Date(date);
+    slotStart.setHours(hours, 0, 0, 0);
+    
+    return bookedSlots.some(booking => {
+      const bookingStart = new Date(booking.startTime);
+      const bookingEnd = new Date(booking.endTime);
+      return slotStart >= bookingStart && slotStart < bookingEnd;
+    });
+  };
 
   const handleBooking = () => {
     if (!date || !startTime) return;
@@ -44,10 +65,17 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
       });
 
       if (result?.error) {
-        alert(result.error);
+        toast.error(result.error);
       } else {
-        alert("Бронирование успешно создано!");
-        // Можно добавить редирект или обновление страницы
+        toast.success("Бронирование успешно создано!");
+        setBookedSlots((prev) => [...prev, { 
+            startTime: new Date(), // Placeholder, ideally fetch again
+            endTime: new Date() 
+        }]);
+        // Refresh bookings
+        if (date) {
+            getRoomBookings(roomId, date).then(setBookedSlots);
+        }
       }
     });
   };
@@ -75,16 +103,19 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <h3 className="font-medium mb-2">Время начала</h3>
-          <Select onValueChange={setStartTime}>
+          <Select onValueChange={setStartTime} value={startTime}>
             <SelectTrigger>
               <SelectValue placeholder="Выберите время" />
             </SelectTrigger>
             <SelectContent>
-              {timeSlots.map((time) => (
-                <SelectItem key={time} value={time}>
-                  {time}
-                </SelectItem>
-              ))}
+              {timeSlots.map((time) => {
+                const isBlocked = isTimeBlocked(time);
+                return (
+                  <SelectItem key={time} value={time} disabled={isBlocked}>
+                    {time} {isBlocked && "(Занято)"}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>

@@ -17,30 +17,32 @@ export async function GET(req: NextRequest) {
   if (mockSuccess === "success") {
     // Handle Mock Success
     const payment = await prisma.payment.findUnique({
-        where: { id: paymentId },
-        include: { user: true }
+      where: { id: paymentId },
+      include: { user: true },
     });
 
     if (payment && payment.status !== "SUCCEEDED") {
-        await prisma.payment.update({
-            where: { id: paymentId },
-            data: { status: "SUCCEEDED" }
-        });
+      await prisma.payment.update({
+        where: { id: paymentId },
+        data: { status: "SUCCEEDED" },
+      });
 
-        // Grant Subscription
-        const endsAt = new Date();
-        endsAt.setDate(endsAt.getDate() + 30);
+      // Grant Subscription
+      const endsAt = new Date();
+      endsAt.setDate(endsAt.getDate() + 30);
 
-        await prisma.user.update({
-            where: { id: payment.userId },
-            data: {
-                subscriptionPlan: payment.plan,
-                subscriptionEndsAt: endsAt
-            }
-        });
+      await prisma.user.update({
+        where: { id: payment.userId },
+        data: {
+          subscriptionPlan: payment.plan,
+          subscriptionEndsAt: endsAt,
+        },
+      });
     }
-    
-    return NextResponse.redirect(new URL("/dashboard?payment=success", req.url));
+
+    return NextResponse.redirect(
+      new URL("/dashboard?payment=success", req.url)
+    );
   }
 
   // Real YooKassa flow: Check status via API (omitted for brevity, assuming webhook handles it or user waits)
@@ -50,6 +52,6 @@ export async function GET(req: NextRequest) {
 
 // Webhook handler
 export async function POST(req: NextRequest) {
-    // Handle YooKassa Webhook here
-    return NextResponse.json({ received: true });
+  // Handle YooKassa Webhook here
+  return NextResponse.json({ received: true });
 }

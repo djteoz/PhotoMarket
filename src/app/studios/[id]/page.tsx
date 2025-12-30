@@ -19,6 +19,7 @@ import Link from "next/link";
 import { AddReviewForm } from "@/components/reviews/add-review-form";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import SearchMap from "@/components/search/search-map-wrapper";
 
 export default async function StudioPage({
   params,
@@ -182,6 +183,13 @@ export default async function StudioPage({
               {studio.description || "Описание отсутствует."}
             </p>
           </section>
+
+          {studio.lat && studio.lng && (
+            <section>
+              <h2 className="text-2xl font-bold mb-4">Расположение</h2>
+              <SearchMap studios={[studio]} />
+            </section>
+          )}
 
           <section>
             <h2 className="text-2xl font-bold mb-4">

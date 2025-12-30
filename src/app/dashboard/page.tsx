@@ -90,6 +90,11 @@ export default async function DashboardPage() {
     orderBy: { startTime: "desc" },
   });
 
+  const payments = await prisma.payment.findMany({
+    where: { userId: dbUser.id },
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
     <div className="container mx-auto py-10 px-4">
       <div className="flex justify-between items-center mb-8">
@@ -107,6 +112,7 @@ export default async function DashboardPage() {
           <TabsTrigger value="bookings">Мои бронирования</TabsTrigger>
           <TabsTrigger value="incoming">Входящие заявки</TabsTrigger>
           <TabsTrigger value="favorites">Избранное</TabsTrigger>
+          <TabsTrigger value="payments">Платежи</TabsTrigger>
         </TabsList>
 
         <TabsContent value="studios" className="space-y-4">
@@ -352,6 +358,62 @@ export default async function DashboardPage() {
                   </Link>
                 );
               })}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="payments">
+          {payments.length === 0 ? (
+            <div className="text-center py-12 border rounded-lg">
+              <p className="text-gray-500">История платежей пуста.</p>
+            </div>
+          ) : (
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-700 uppercase">
+                  <tr>
+                    <th className="px-6 py-3">Дата</th>
+                    <th className="px-6 py-3">Тариф</th>
+                    <th className="px-6 py-3">Сумма</th>
+                    <th className="px-6 py-3">Способ</th>
+                    <th className="px-6 py-3">Статус</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payments.map((payment) => (
+                    <tr
+                      key={payment.id}
+                      className="bg-white border-b hover:bg-gray-50"
+                    >
+                      <td className="px-6 py-4">
+                        {format(payment.createdAt, "d MMMM yyyy HH:mm", {
+                          locale: ru,
+                        })}
+                      </td>
+                      <td className="px-6 py-4 font-medium">{payment.plan}</td>
+                      <td className="px-6 py-4">{Number(payment.amount)} ₽</td>
+                      <td className="px-6 py-4">{payment.provider}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            payment.status === "SUCCEEDED"
+                              ? "bg-green-100 text-green-800"
+                              : payment.status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {payment.status === "SUCCEEDED"
+                            ? "Оплачено"
+                            : payment.status === "PENDING"
+                            ? "Ожидание"
+                            : "Отменено"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </TabsContent>

@@ -87,6 +87,31 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
   return { success: true };
 }
 
+export async function getRoomBookings(roomId: string, date: Date) {
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+  
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const bookings = await prisma.booking.findMany({
+    where: {
+      roomId,
+      status: { not: "CANCELLED" },
+      startTime: {
+        gte: startOfDay,
+        lt: endOfDay,
+      },
+    },
+    select: {
+      startTime: true,
+      endTime: true,
+    },
+  });
+
+  return bookings;
+}
+
 export async function updateBookingStatus(
   bookingId: string,
   status: "CONFIRMED" | "CANCELLED" | "COMPLETED"
