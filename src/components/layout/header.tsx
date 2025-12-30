@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { Camera } from "lucide-react";
+import { Camera, MessageSquare, User } from "lucide-react";
 
 export function Header() {
   return (
@@ -31,6 +31,16 @@ export function Header() {
             </Link>
           </SignedOut>
           <SignedIn>
+            <Button variant="ghost" size="icon" asChild title="Сообщения">
+              <Link href="/messages">
+                <MessageSquare className="h-5 w-5" />
+              </Link>
+            </Button>
+            <Button variant="ghost" size="icon" asChild title="Профиль">
+              <Link href="/profile">
+                <User className="h-5 w-5" />
+              </Link>
+            </Button>
             <Button variant="ghost" asChild>
               <Link href="/dashboard">Личный кабинет</Link>
             </Button>

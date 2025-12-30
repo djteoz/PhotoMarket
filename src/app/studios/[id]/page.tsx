@@ -20,6 +20,7 @@ import { AddReviewForm } from "@/components/reviews/add-review-form";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import SearchMap from "@/components/search/search-map-wrapper";
+import { ContactOwnerButton } from "@/components/studios/contact-owner-button";
 
 export default async function StudioPage({
   params,
@@ -352,9 +353,16 @@ export default async function StudioPage({
                 </div>
               )}
               <div className="pt-4 border-t">
-                <Button className="w-full" size="lg">
-                  Написать владельцу
-                </Button>
+                {!isOwner && user ? (
+                  <ContactOwnerButton 
+                    ownerId={studio.owner.id} 
+                    studioName={studio.name} 
+                  />
+                ) : !user ? (
+                  <Button className="w-full" size="lg" asChild>
+                    <Link href="/sign-in">Войти, чтобы написать</Link>
+                  </Button>
+                ) : null}
               </div>
             </div>
           </div>
