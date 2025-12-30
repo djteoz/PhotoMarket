@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, MapPin, Calendar, Clock, Star } from "lucide-react";
+import { Plus, MapPin, Calendar, Clock, Star, Shield } from "lucide-react";
 import { Studio } from "@prisma/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
@@ -100,11 +100,20 @@ export default async function DashboardPage() {
     <div className="container mx-auto py-10 px-4">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Личный кабинет</h1>
-        <Link href="/add-studio">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Добавить студию
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          {dbUser.role === "ADMIN" && (
+            <Button variant="destructive" asChild>
+              <Link href="/admin">
+                <Shield className="mr-2 h-4 w-4" /> Админ-панель
+              </Link>
+            </Button>
+          )}
+          <Link href="/add-studio">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" /> Добавить студию
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Tabs defaultValue="studios" className="space-y-4">

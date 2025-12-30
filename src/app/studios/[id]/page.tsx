@@ -85,7 +85,7 @@ export default async function StudioPage({ params }: Props) {
 
     if (dbUser) {
       isFavorite = dbUser.favorites.some((f) => f.studioId === studio.id);
-      
+
       // Check if user has completed booking to allow review
       const booking = await prisma.booking.findFirst({
         where: {
@@ -304,11 +304,12 @@ export default async function StudioPage({ params }: Props) {
                 <AddReviewForm studioId={studio.id} />
               </div>
             )}
-            
+
             {user && !isOwner && !hasCompletedBooking && (
-               <div className="mb-8 p-4 bg-gray-50 rounded-lg text-sm text-gray-500">
-                 Чтобы оставить отзыв, необходимо завершить хотя бы одно бронирование в этой студии.
-               </div>
+              <div className="mb-8 p-4 bg-gray-50 rounded-lg text-sm text-gray-500">
+                Чтобы оставить отзыв, необходимо завершить хотя бы одно
+                бронирование в этой студии.
+              </div>
             )}
 
             <div className="space-y-6">

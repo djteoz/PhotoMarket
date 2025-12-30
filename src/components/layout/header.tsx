@@ -1,9 +1,22 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { Camera, MessageSquare, User } from "lucide-react";
+import { Camera, MessageSquare, User, Shield } from "lucide-react";
+import { currentUser } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
 
-export function Header() {
+export async function Header() {
+  const user = await currentUser();
+  let isAdmin = false;
+
+  if (user) {
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkId: user.id },
+      select: { role: true },
+    });
+    isAdmin = dbUser?.role === "ADMIN";
+  }
+
   return (
     <header className="border-b">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -31,6 +44,13 @@ export function Header() {
             </Link>
           </SignedOut>
           <SignedIn>
+            {isAdmin && (
+              <Button variant="ghost" size="icon" asChild title="Админ-панель">
+                <Link href="/admin">
+                  <Shield className="h-5 w-5 text-red-600" />
+                </Link>
+              </Button>
+            )}
             <Button variant="ghost" size="icon" asChild title="Сообщения">
               <Link href="/messages">
                 <MessageSquare className="h-5 w-5" />
