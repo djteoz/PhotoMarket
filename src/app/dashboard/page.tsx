@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import Image from "next/image";
 import { BookingActions } from "@/components/booking/booking-actions";
+import { OwnerCalendar } from "@/components/dashboard/owner-calendar";
 
 export default async function DashboardPage() {
   const user = await currentUser();
@@ -111,6 +112,7 @@ export default async function DashboardPage() {
           <TabsTrigger value="studios">Мои студии</TabsTrigger>
           <TabsTrigger value="bookings">Мои бронирования</TabsTrigger>
           <TabsTrigger value="incoming">Входящие заявки</TabsTrigger>
+          <TabsTrigger value="calendar">Календарь</TabsTrigger>
           <TabsTrigger value="favorites">Избранное</TabsTrigger>
           <TabsTrigger value="payments">Платежи</TabsTrigger>
         </TabsList>
@@ -283,6 +285,10 @@ export default async function DashboardPage() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="calendar">
+          <OwnerCalendar bookings={incomingBookings} />
         </TabsContent>
 
         <TabsContent value="favorites">

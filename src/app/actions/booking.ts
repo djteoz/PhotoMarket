@@ -4,6 +4,9 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { sendBookingNotification, sendNewBookingNotificationToOwner } from "@/lib/mail";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
 
 const bookingSchema = z.object({
   roomId: z.string(),
@@ -42,6 +45,13 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
   // Получаем информацию о зале для расчета цены
   const room = await prisma.room.findUnique({
     where: { id: roomId },
+    include: {
+      studio: {
+        include: {
+          owner: true,
+        },
+      },
+    },
   });
 
   if (!room) {
@@ -79,6 +89,31 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
         status: "PENDING",
       },
     });
+
+    // Send notifications
+    const dateStr = format(startDateTime, "d MMMM yyyy", { locale: ru });
+    const timeStr = `${format(startDateTime, "HH:mm")} - ${format(endDateTime, "HH:mm")}`;
+
+    // To User
+    await sendBookingNotification({
+      to: dbUser.email,
+      userName: dbUser.name || "Пользователь",
+      studioName: room.studio.name,
+      roomName: room.name,
+      date: dateStr,
+      time: timeStr,
+    });
+
+    // To Owner
+    await sendNewBookingNotificationToOwner({
+      to: room.studio.owner.email,
+      ownerName: room.studio.owner.name || "Владелец",
+      studioName: room.studio.name,
+      roomName: room.name,
+      date: dateStr,
+      time: timeStr,
+    });
+
   } catch (error) {
     console.error("Failed to create booking:", error);
     return { error: "Failed to create booking" };
