@@ -4,7 +4,10 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { sendBookingNotification, sendNewBookingNotificationToOwner } from "@/lib/mail";
+import {
+  sendBookingNotification,
+  sendNewBookingNotificationToOwner,
+} from "@/lib/mail";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 
@@ -92,7 +95,10 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
 
     // Send notifications
     const dateStr = format(startDateTime, "d MMMM yyyy", { locale: ru });
-    const timeStr = `${format(startDateTime, "HH:mm")} - ${format(endDateTime, "HH:mm")}`;
+    const timeStr = `${format(startDateTime, "HH:mm")} - ${format(
+      endDateTime,
+      "HH:mm"
+    )}`;
 
     // To User
     await sendBookingNotification({
@@ -113,7 +119,6 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
       date: dateStr,
       time: timeStr,
     });
-
   } catch (error) {
     console.error("Failed to create booking:", error);
     return { error: "Failed to create booking" };

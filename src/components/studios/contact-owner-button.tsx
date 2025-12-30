@@ -12,7 +12,10 @@ interface ContactOwnerButtonProps {
   studioName: string;
 }
 
-export function ContactOwnerButton({ ownerId, studioName }: ContactOwnerButtonProps) {
+export function ContactOwnerButton({
+  ownerId,
+  studioName,
+}: ContactOwnerButtonProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -28,9 +31,9 @@ export function ContactOwnerButton({ ownerId, studioName }: ContactOwnerButtonPr
   };
 
   return (
-    <Button 
-      className="w-full" 
-      size="lg" 
+    <Button
+      className="w-full"
+      size="lg"
       onClick={handleContact}
       disabled={isPending}
     >

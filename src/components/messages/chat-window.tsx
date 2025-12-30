@@ -71,7 +71,9 @@ export function ChatWindow({
           <AvatarImage src={otherUser.image || ""} />
           <AvatarFallback>{otherUser.name?.[0] || "U"}</AvatarFallback>
         </Avatar>
-        <span className="font-semibold">{otherUser.name || otherUser.email}</span>
+        <span className="font-semibold">
+          {otherUser.name || otherUser.email}
+        </span>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>

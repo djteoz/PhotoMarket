@@ -21,12 +21,35 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import SearchMap from "@/components/search/search-map-wrapper";
 import { ContactOwnerButton } from "@/components/studios/contact-owner-button";
+import { Metadata } from "next";
 
-export default async function StudioPage({
-  params,
-}: {
+type Props = {
   params: Promise<{ id: string }>;
-}) {
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const studio = await prisma.studio.findUnique({
+    where: { id },
+    select: { name: true, description: true, images: true },
+  });
+
+  if (!studio) {
+    return {
+      title: "Студия не найдена",
+    };
+  }
+
+  return {
+    title: `${studio.name} | PhotoMarket`,
+    description: studio.description?.slice(0, 160) || "Аренда фотостудии",
+    openGraph: {
+      images: studio.images[0] ? [studio.images[0]] : [],
+    },
+  };
+}
+
+export default async function StudioPage({ params }: Props) {
   const user = await currentUser();
   const { id } = await params;
 
@@ -50,27 +73,36 @@ export default async function StudioPage({
     notFound();
   }
 
+  let dbUser = null;
+  let isFavorite = false;
+  let hasCompletedBooking = false;
+
+  if (user) {
+    dbUser = await prisma.user.findUnique({
+      where: { clerkId: user.id },
+      include: { favorites: true },
+    });
+
+    if (dbUser) {
+      isFavorite = dbUser.favorites.some((f) => f.studioId === studio.id);
+      
+      // Check if user has completed booking to allow review
+      const booking = await prisma.booking.findFirst({
+        where: {
+          userId: dbUser.id,
+          room: { studioId: studio.id },
+          status: "COMPLETED",
+        },
+      });
+      hasCompletedBooking = !!booking;
+    }
+  }
+
   const averageRating =
     studio.reviews.length > 0
       ? studio.reviews.reduce((acc, review) => acc + review.rating, 0) /
         studio.reviews.length
       : 0;
-
-  let isFavorite = false;
-  if (user) {
-    const favorite = await prisma.favorite.findUnique({
-      where: {
-        userId_studioId: {
-          userId:
-            (
-              await prisma.user.findUnique({ where: { clerkId: user.id } })
-            )?.id || "",
-          studioId: studio.id,
-        },
-      },
-    });
-    isFavorite = !!favorite;
-  }
 
   const isOwner = user?.id === studio.owner.clerkId;
 
@@ -267,10 +299,16 @@ export default async function StudioPage({
           <section>
             <h2 className="text-2xl font-bold mb-4">Отзывы</h2>
 
-            {user && !isOwner && (
+            {user && !isOwner && hasCompletedBooking && (
               <div className="mb-8">
                 <AddReviewForm studioId={studio.id} />
               </div>
+            )}
+            
+            {user && !isOwner && !hasCompletedBooking && (
+               <div className="mb-8 p-4 bg-gray-50 rounded-lg text-sm text-gray-500">
+                 Чтобы оставить отзыв, необходимо завершить хотя бы одно бронирование в этой студии.
+               </div>
             )}
 
             <div className="space-y-6">
@@ -354,9 +392,9 @@ export default async function StudioPage({
               )}
               <div className="pt-4 border-t">
                 {!isOwner && user ? (
-                  <ContactOwnerButton 
-                    ownerId={studio.owner.id} 
-                    studioName={studio.name} 
+                  <ContactOwnerButton
+                    ownerId={studio.owner.id}
+                    studioName={studio.name}
                   />
                 ) : !user ? (
                   <Button className="w-full" size="lg" asChild>

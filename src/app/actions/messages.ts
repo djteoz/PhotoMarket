@@ -98,13 +98,13 @@ export async function getMessages(conversationId: string) {
   const dbUser = await prisma.user.findUnique({
     where: { clerkId: user.id },
   });
-  
+
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     include: { users: true },
   });
 
-  if (!conversation || !conversation.users.some(u => u.id === dbUser?.id)) {
+  if (!conversation || !conversation.users.some((u) => u.id === dbUser?.id)) {
     throw new Error("Unauthorized");
   }
 

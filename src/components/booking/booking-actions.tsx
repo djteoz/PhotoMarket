@@ -26,8 +26,9 @@ export function BookingActions({
     startTransition(async () => {
       const result = await updateBookingStatus(bookingId, newStatus);
       if (result.error) {
-        alert(result.error);
+        toast.error(result.error);
       } else {
+        toast.success("Статус бронирования обновлен");
         router.refresh();
       }
     });

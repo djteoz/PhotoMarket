@@ -119,10 +119,12 @@ export function OwnerCalendar({ bookings }: OwnerCalendarProps) {
                         <span>{booking.user.name || booking.user.email}</span>
                       </div>
                     </div>
-                    
+
                     <div className="mt-2 pt-2 border-t flex justify-between items-center text-sm">
-                        <span className="text-gray-500">Сумма:</span>
-                        <span className="font-bold">{Number(booking.totalPrice)} ₽</span>
+                      <span className="text-gray-500">Сумма:</span>
+                      <span className="font-bold">
+                        {Number(booking.totalPrice)} ₽
+                      </span>
                     </div>
                   </div>
                 ))}

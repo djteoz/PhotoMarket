@@ -22,10 +22,14 @@ export default async function MessagesPage() {
       <h1 className="text-2xl font-bold mb-6">Сообщения</h1>
       <div className="space-y-4">
         {conversations.length === 0 ? (
-          <p className="text-gray-500 text-center py-12">У вас нет активных диалогов.</p>
+          <p className="text-gray-500 text-center py-12">
+            У вас нет активных диалогов.
+          </p>
         ) : (
           conversations.map((conversation) => {
-            const otherUser = conversation.users.find((u) => u.id !== dbUser?.id);
+            const otherUser = conversation.users.find(
+              (u) => u.id !== dbUser?.id
+            );
             const lastMessage = conversation.messages[0];
 
             return (
