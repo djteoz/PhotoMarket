@@ -20,6 +20,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PhotoMarket - Агрегатор фотостудий",
   description: "Найдите и забронируйте лучшую фотостудию для вашей съемки",
+  icons: {
+    icon: "/icon",
+  },
 };
 
 export default function RootLayout({
