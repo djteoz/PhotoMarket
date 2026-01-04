@@ -36,7 +36,7 @@ export async function GET(
       summary: "Забронировано (PhotoMarket)",
       description: `Бронирование через PhotoMarket\nID: ${booking.id}`,
       location: `${room.studio.city}, ${room.studio.address}, ${room.name}`,
-      uid: booking.id,
+      id: booking.id,
     });
   });
 
