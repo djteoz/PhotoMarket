@@ -3,6 +3,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const roomSchema = z.object({
@@ -145,4 +146,51 @@ export async function updateRoom(
   }
 
   redirect(`/studios/${room.studioId}`);
+}
+
+export async function updateRoomIcal(roomId: string, importUrl: string) {
+  const user = await currentUser();
+
+  if (!user) {
+    return { error: "Unauthorized" };
+  }
+
+  const room = await prisma.room.findUnique({
+    where: { id: roomId },
+    include: { studio: { include: { owner: true } } },
+  });
+
+  if (!room) {
+    return { error: "Room not found" };
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: user.id },
+  });
+
+  if (room.studio.owner.clerkId !== user.id && dbUser?.role !== "ADMIN") {
+    return { error: "Unauthorized" };
+  }
+
+  try {
+    await prisma.room.update({
+      where: { id: roomId },
+      data: { icalImportUrl: importUrl },
+    });
+
+    // Trigger sync immediately if URL is provided
+    if (importUrl) {
+      // We can't import syncRoomCalendar here directly if it uses node-ical which might not be edge compatible
+      // or if we want to keep actions clean. But let's try to import it dynamically or just call it.
+      // Since this is a server action, it runs on Node, so it should be fine.
+      const { syncRoomCalendar } = await import("@/lib/ical-sync");
+      await syncRoomCalendar(roomId);
+    }
+
+    revalidatePath(`/studios/${room.studioId}/rooms/${roomId}/edit`);
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update iCal:", error);
+    return { error: "Failed to update settings" };
+  }
 }

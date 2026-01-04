@@ -1,4 +1,5 @@
 import { AddRoomForm } from "@/components/rooms/add-room-form";
+import { ICalSettings } from "@/components/rooms/ical-settings";
 import {
   Card,
   CardContent,
@@ -35,7 +36,11 @@ export default async function EditRoomPage({
     notFound();
   }
 
-  if (room.studio.owner.clerkId !== user.id) {
+  const dbUser = await prisma.user.findUnique({
+    where: { clerkId: user.id },
+  });
+
+  if (room.studio.owner.clerkId !== user.id && dbUser?.role !== "ADMIN") {
     redirect("/");
   }
 
@@ -51,6 +56,8 @@ export default async function EditRoomPage({
             <AddRoomForm studioId={id} initialData={room} />
           </CardContent>
         </Card>
+
+        <ICalSettings room={room} />
       </div>
     </div>
   );

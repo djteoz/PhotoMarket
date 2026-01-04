@@ -97,6 +97,9 @@ model Room {
   images          String[]
   amenities       Amenity[] // Many-to-many
   bookings        Booking[]
+
+  icalImportUrl   String?
+  icalExportToken String   @default(cuid())
   
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -126,6 +129,9 @@ model Booking {
   totalPrice Decimal
   status    BookingStatus @default(PENDING)
   
+  source    String        @default("INTERNAL") // "INTERNAL" | "ICAL"
+  externalId String?      // UID from iCal event
+
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 }
