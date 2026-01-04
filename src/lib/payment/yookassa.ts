@@ -7,6 +7,7 @@ export async function createYookassaPayment(
   amount: number,
   description: string,
   returnUrl: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   metadata: any
 ) {
   if (!YOOKASSA_SHOP_ID || !YOOKASSA_SECRET_KEY) {

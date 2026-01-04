@@ -40,7 +40,7 @@ export default async function AddRoomPage({
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle>Добавить зал в студию "{studio.name}"</CardTitle>
+            <CardTitle>Добавить зал в студию &quot;{studio.name}&quot;</CardTitle>
             <CardDescription>
               Заполните информацию о зале, чтобы клиенты могли его бронировать.
             </CardDescription>

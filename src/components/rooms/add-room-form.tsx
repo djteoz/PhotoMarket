@@ -43,6 +43,7 @@ interface RoomFormProps {
     id: string;
     name: string;
     description: string | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     pricePerHour: any; // Decimal
     area: number;
     capacity: number | null;

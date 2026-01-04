@@ -22,6 +22,7 @@ export default async function CatalogPage({
   const user = await currentUser();
   const { city, minPrice, maxPrice } = await searchParams;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const where: any = {};
 
   if (city && typeof city === "string") {

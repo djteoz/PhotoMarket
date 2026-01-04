@@ -10,9 +10,9 @@ export function YandexMetrika() {
 
   useEffect(() => {
     const url = `${pathname}?${searchParams}`;
-    // @ts-ignore
+    // @ts-expect-error Yandex Metrika is loaded externally
     if (typeof window.ym !== "undefined") {
-      // @ts-ignore
+      // @ts-expect-error Yandex Metrika is loaded externally
       window.ym(process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID, "hit", url);
     }
   }, [pathname, searchParams]);

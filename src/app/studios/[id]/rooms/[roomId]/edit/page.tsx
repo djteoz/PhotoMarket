@@ -49,7 +49,7 @@ export default async function EditRoomPage({
       <div className="max-w-2xl mx-auto">
         <Card>
           <CardHeader>
-            <CardTitle>Редактировать зал "{room.name}"</CardTitle>
+            <CardTitle>Редактировать зал &quot;{room.name}&quot;</CardTitle>
             <CardDescription>Измените информацию о зале.</CardDescription>
           </CardHeader>
           <CardContent>

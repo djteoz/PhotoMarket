@@ -11,6 +11,7 @@ const contactFormSchema = z.object({
   message: z.string().min(10, "Сообщение должно содержать минимум 10 символов"),
 });
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function submitContactForm(prevState: any, formData: FormData) {
   try {
     const rawData = {

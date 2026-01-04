@@ -32,7 +32,6 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
   useEffect(() => {
     if (date) {
       getRoomBookings(roomId, date).then(setBookedSlots);
-      setStartTime(""); // Reset time when date changes
     }
   }, [date, roomId]);
 
@@ -95,7 +94,10 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
           <Calendar
             mode="single"
             selected={date}
-            onSelect={setDate}
+            onSelect={(newDate) => {
+              setDate(newDate);
+              setStartTime("");
+            }}
             disabled={(date) =>
               date < new Date(new Date().setHours(0, 0, 0, 0))
             }

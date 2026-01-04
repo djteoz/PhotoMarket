@@ -131,13 +131,14 @@ export function PricingCard({
           <DialogHeader>
             <DialogTitle>Выберите способ оплаты</DialogTitle>
             <DialogDescription>
-              Оплата тарифа "{plan.name}" на сумму {plan.price}
+              Оплата тарифа &quot;{plan.name}&quot; на сумму {plan.price}
             </DialogDescription>
           </DialogHeader>
 
           <div className="py-4">
             <RadioGroup
               value={selectedProvider}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onValueChange={(v) => setSelectedProvider(v as any)}
             >
               <div className="flex items-center space-x-2 border p-4 rounded-lg cursor-pointer hover:bg-gray-50">
