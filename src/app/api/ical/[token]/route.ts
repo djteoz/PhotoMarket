@@ -30,14 +30,14 @@ export async function GET(
   });
 
   room.bookings.forEach((booking) => {
-    calendar.createEvent({
+    const event = calendar.createEvent({
       start: booking.startTime,
       end: booking.endTime,
       summary: "Забронировано (PhotoMarket)",
       description: `Бронирование через PhotoMarket\nID: ${booking.id}`,
       location: `${room.studio.city}, ${room.studio.address}, ${room.name}`,
-      id: booking.id,
     });
+    event.uid(booking.id);
   });
 
   return new NextResponse(calendar.toString(), {
