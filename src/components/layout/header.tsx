@@ -74,17 +74,3 @@ export async function Header() {
     </header>
   );
 }
-
-                <User className="h-5 w-5" />
-              </Link>
-            </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/dashboard">Личный кабинет</Link>
-            </Button>
-            <UserButton />
-          </SignedIn>
-        </div>
-      </div>
-    </header>
-  );
-}
