@@ -4,6 +4,7 @@ import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Camera, MessageSquare, User, Shield } from "lucide-react";
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { MobileNav } from "./mobile-nav";
 
 export async function Header() {
   const user = await currentUser();
@@ -18,7 +19,7 @@ export async function Header() {
   }
 
   return (
-    <header className="border-b">
+    <header className="border-b relative">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl">
           <Camera className="h-6 w-6" />
@@ -34,7 +35,7 @@ export async function Header() {
           </Link>
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-4">
           <SignedOut>
             <SignInButton mode="modal">
               <Button variant="outline">Войти</Button>
@@ -58,6 +59,22 @@ export async function Header() {
             </Button>
             <Button variant="ghost" size="icon" asChild title="Профиль">
               <Link href="/profile">
+                <User className="h-5 w-5" />
+              </Link>
+            </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/dashboard">Кабинет</Link>
+            </Button>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+        </div>
+
+        <MobileNav isAdmin={isAdmin} />
+      </div>
+    </header>
+  );
+}
+
                 <User className="h-5 w-5" />
               </Link>
             </Button>
