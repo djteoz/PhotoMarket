@@ -65,8 +65,8 @@ export function ICalSettings({ room }: ICalSettingsProps) {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Вставьте эту ссылку в Google Calendar (&quot;Добавить по URL&quot;), чтобы
-            видеть бронирования отсюда.
+            Вставьте эту ссылку в Google Calendar (&quot;Добавить по URL&quot;),
+            чтобы видеть бронирования отсюда.
           </p>
         </div>
 
