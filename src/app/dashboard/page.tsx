@@ -24,6 +24,18 @@ export default async function DashboardPage() {
     where: { clerkId: user.id },
     include: {
       studios: true,
+      bookings: {
+        include: {
+          room: {
+            include: {
+              studio: true,
+            },
+          },
+        },
+        orderBy: {
+          startTime: "desc",
+        },
+      },
       favorites: {
         include: {
           studio: {
@@ -47,6 +59,18 @@ export default async function DashboardPage() {
       },
       include: {
         studios: true,
+        bookings: {
+          include: {
+            room: {
+              include: {
+                studio: true,
+              },
+            },
+          },
+          orderBy: {
+            startTime: "desc",
+          },
+        },
         favorites: {
           include: {
             studio: {
@@ -60,17 +84,7 @@ export default async function DashboardPage() {
     });
   }
 
-  const myBookings = await prisma.booking.findMany({
-    where: { userId: dbUser.id },
-    include: {
-      room: {
-        include: {
-          studio: true,
-        },
-      },
-    },
-    orderBy: { startTime: "desc" },
-  });
+  const myBookings = dbUser.bookings;
 
   const incomingBookings = await prisma.booking.findMany({
     where: {
