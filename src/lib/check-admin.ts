@@ -25,7 +25,11 @@ export async function checkAdmin() {
     });
   }
 
-  if (user.role !== "ADMIN") {
+  if (
+    user.role !== "ADMIN" &&
+    user.role !== "OWNER" &&
+    user.role !== "MODERATOR"
+  ) {
     redirect("/");
   }
 

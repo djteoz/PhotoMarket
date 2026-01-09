@@ -51,7 +51,7 @@ export function Footer() {
 
           <div>
             <h4 className="font-semibold mb-4">Контакты</h4>
-            <p className="text-sm text-gray-600">support@photomarket.com</p>
+            <p className="text-sm text-gray-600">support@photomarket.tech</p>
           </div>
         </div>
 

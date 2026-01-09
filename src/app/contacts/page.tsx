@@ -1,4 +1,5 @@
 import { Mail, MapPin, Phone } from "lucide-react";
+import { ContactForm } from "@/components/contact-form";
 
 export default function ContactsPage() {
   return (
@@ -26,7 +27,7 @@ export default function ContactsPage() {
               <Phone className="w-6 h-6 text-primary mt-1" />
               <div>
                 <h3 className="font-semibold mb-1">Телефон</h3>
-                <p className="text-muted-foreground">+7 (999) 123-45-67</p>
+                <p className="text-muted-foreground">+7 (999) 799-46-74</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Пн-Пт: 10:00 - 19:00
                 </p>
@@ -37,7 +38,9 @@ export default function ContactsPage() {
               <Mail className="w-6 h-6 text-primary mt-1" />
               <div>
                 <h3 className="font-semibold mb-1">Email</h3>
-                <p className="text-muted-foreground">support@photomarket.ru</p>
+                <p className="text-muted-foreground">
+                  support@photomarket.tech
+                </p>
               </div>
             </div>
           </div>
@@ -45,11 +48,7 @@ export default function ContactsPage() {
 
         <div className="bg-muted/50 p-8 rounded-lg">
           <h2 className="text-xl font-semibold mb-4">Напишите нам</h2>
-          <p className="text-muted-foreground mb-4">
-            Если у вас есть вопросы или предложения, отправьте нам письмо на
-            электронную почту, и мы ответим в ближайшее время.
-          </p>
-          {/* Здесь можно добавить форму обратной связи в будущем */}
+          <ContactForm />
         </div>
       </div>
     </div>

@@ -41,6 +41,7 @@ export default async function DashboardPage() {
           studio: {
             include: {
               rooms: true,
+              reviews: true,
             },
           },
         },
@@ -332,6 +333,14 @@ export default async function DashboardPage() {
                       )
                     : null;
 
+                const averageRating =
+                  studio.reviews.length > 0
+                    ? (
+                        studio.reviews.reduce((acc, r) => acc + r.rating, 0) /
+                        studio.reviews.length
+                      ).toFixed(1)
+                    : null;
+
                 return (
                   <Link
                     href={`/studios/${studio.id}`}
@@ -358,10 +367,12 @@ export default async function DashboardPage() {
                             <Star className="h-5 w-5 fill-red-500 text-red-500 p-1" />
                           </div>
                         </div>
-                        <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          4.9
-                        </div>
+                        {averageRating && (
+                          <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            {averageRating}
+                          </div>
+                        )}
                       </div>
                       <CardHeader>
                         <CardTitle className="flex justify-between items-start">

@@ -6,13 +6,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { MapPin, Star } from "lucide-react";
+import { MapPin, Star, Crown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
 import { CatalogFilters } from "@/components/catalog/filters";
 import { currentUser } from "@clerk/nextjs/server";
 import { FavoriteButton } from "@/components/studios/favorite-button";
+import { cn } from "@/lib/utils";
 
 export default async function CatalogPage({
   searchParams,
@@ -45,10 +46,28 @@ export default async function CatalogPage({
     include: {
       rooms: true,
       reviews: true,
+      owner: {
+        select: {
+          subscriptionPlan: true,
+        },
+      },
     },
     orderBy: {
       createdAt: "desc",
     },
+  });
+
+  // Sort: Premium first
+  studios.sort((a, b) => {
+    const isAPremium =
+      a.owner?.subscriptionPlan === "PREMIUM" ||
+      a.owner?.subscriptionPlan === "PRO";
+    const isBPremium =
+      b.owner?.subscriptionPlan === "PREMIUM" ||
+      b.owner?.subscriptionPlan === "PRO";
+    if (isAPremium && !isBPremium) return -1;
+    if (!isAPremium && isBPremium) return 1;
+    return 0;
   });
 
   let favoriteIds: string[] = [];
@@ -96,6 +115,9 @@ export default async function CatalogPage({
                     : null;
 
                 const isFavorite = favoriteIds.includes(studio.id);
+                const isPremium =
+                  studio.owner?.subscriptionPlan === "PREMIUM" ||
+                  studio.owner?.subscriptionPlan === "PRO";
 
                 return (
                   <Link
@@ -103,7 +125,13 @@ export default async function CatalogPage({
                     key={studio.id}
                     className="group relative block h-full"
                   >
-                    <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
+                    <Card
+                      className={cn(
+                        "overflow-hidden hover:shadow-lg transition-all h-full flex flex-col",
+                        isPremium &&
+                          "border-2 border-yellow-400 bg-yellow-50/30"
+                      )}
+                    >
                       <div className="relative h-48 bg-gray-200">
                         {studio.images[0] ? (
                           <Image
@@ -124,14 +152,24 @@ export default async function CatalogPage({
                             isIconOnly
                           />
                         </div>
-                        <div className="absolute top-2 left-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          4.9
+                        <div className="absolute top-2 left-2 flex gap-2">
+                          <div className="bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            4.9
+                          </div>
+                          {isPremium && (
+                            <div className="bg-gradient-to-r from-yellow-400 to-amber-600 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm">
+                              <Crown className="h-3 w-3" />
+                              PRO
+                            </div>
+                          )}
                         </div>
                       </div>
                       <CardHeader>
                         <CardTitle className="flex justify-between items-start">
-                          <span>{studio.name}</span>
+                          <span className={isPremium ? "text-amber-700" : ""}>
+                            {studio.name}
+                          </span>
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="flex-1">

@@ -14,6 +14,30 @@ import { SearchHero } from "@/components/search/search-hero";
 import { SearchFilters } from "@/components/search/search-filters";
 import { Prisma } from "@prisma/client";
 import SearchMap from "@/components/search/search-map-wrapper";
+import { Metadata } from "next";
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string; city?: string }>;
+}): Promise<Metadata> {
+  const { q, city } = await searchParams;
+
+  let title = "Поиск фотостудий | PhotoMarket";
+  let description = "Найдите идеальную фотостудию для вашей съемки";
+
+  if (city) {
+    title = `Фотостудии в г. ${city} | PhotoMarket`;
+    description = `Аренда фотостудий в г. ${city}. Большой выбор залов, отзывы, цены.`;
+  } else if (q) {
+    title = `Поиск: ${q} | PhotoMarket`;
+  }
+
+  return {
+    title,
+    description,
+  };
+}
 
 export default async function SearchPage({
   searchParams,
@@ -134,6 +158,14 @@ export default async function SearchPage({
                       )
                     : null;
 
+                const averageRating =
+                  studio.reviews.length > 0
+                    ? (
+                        studio.reviews.reduce((acc, r) => acc + r.rating, 0) /
+                        studio.reviews.length
+                      ).toFixed(1)
+                    : null;
+
                 return (
                   <Link href={`/studios/${studio.id}`} key={studio.id}>
                     <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
@@ -150,10 +182,12 @@ export default async function SearchPage({
                             Нет фото
                           </div>
                         )}
-                        <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          4.9
-                        </div>
+                        {averageRating && (
+                          <div className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            {averageRating}
+                          </div>
+                        )}
                       </div>
                       <CardHeader>
                         <CardTitle className="flex justify-between items-start">

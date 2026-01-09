@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer";
 import { YandexMetrika } from "@/components/analytics/yandex-metrika";
 import { Suspense } from "react";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,6 +23,10 @@ export const metadata: Metadata = {
   description: "Найдите и забронируйте лучшую фотостудию для вашей съемки",
   icons: {
     icon: "/icon",
+  },
+  verification: {
+    yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION,
+    google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
   },
 };
 
@@ -42,6 +47,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

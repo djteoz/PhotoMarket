@@ -13,6 +13,31 @@ const PLAN_PRICES = {
   BUSINESS: 2990,
 };
 
+export async function updateUserSubscription(
+  userId: string,
+  plan: SubscriptionPlan,
+  months: number = 1
+) {
+  try {
+    const endsAt = new Date();
+    endsAt.setMonth(endsAt.getMonth() + months);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        subscriptionPlan: plan,
+        subscriptionEndsAt: plan === "FREE" ? null : endsAt,
+      },
+    });
+
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    return { error: "Failed to update subscription" };
+  }
+}
+
 export async function createSubscriptionPayment(
   plan: SubscriptionPlan,
   provider: "YOOKASSA" | "ROBOKASSA"

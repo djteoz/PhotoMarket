@@ -41,6 +41,12 @@ export default async function AdminLayout({
               Обращения
             </Button>
           </Link>
+          <Link href="/admin/security">
+            <Button variant="ghost" className="w-full justify-start gap-2">
+              <LogOut className="w-4 h-4 rotate-90" />
+              Безопасность
+            </Button>
+          </Link>
           <Link href="/admin/studios">
             <Button variant="ghost" className="w-full justify-start gap-2">
               <Building2 className="w-4 h-4" />

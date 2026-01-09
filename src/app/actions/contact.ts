@@ -23,9 +23,35 @@ export async function submitContactForm(prevState: any, formData: FormData) {
 
     const validatedData = contactFormSchema.parse(rawData);
 
+    // --- Simple Anti-Spam Bot ---
+    // Check for spam keywords
+    const spamKeywords = [
+      "http://",
+      "https://",
+      "cryptocurrency",
+      "investment",
+      "buy traffic",
+      "seo ranking",
+    ];
+    const messageLower = validatedData.message.toLowerCase();
+    const isSpam = spamKeywords.some((keyword) =>
+      messageLower.includes(keyword)
+    );
+
     await prisma.supportTicket.create({
-      data: validatedData,
+      data: {
+        ...validatedData,
+        status: isSpam ? "CLOSED" : "OPEN",
+      },
     });
+
+    if (isSpam) {
+      // We can quietly "succeed" but not actually notify admins or similar
+      return {
+        success: true,
+        message: "Ваше сообщение принято", // Fake success for bots
+      };
+    }
 
     revalidatePath("/contacts");
 

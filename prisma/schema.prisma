@@ -12,8 +12,9 @@ datasource db {
 
 enum Role {
   USER
-  OWNER
+  MODERATOR
   ADMIN
+  OWNER
 }
 
 enum SubscriptionPlan {
@@ -45,6 +46,112 @@ model User {
   
   conversations Conversation[]
   messages      Message[]
+
+  isBanned      Boolean   @default(false)
+  banReason     String?
+
+  forumPosts    ForumPost[]
+  forumComments ForumComment[]
+  forumLikes    ForumLike[]
+  notifications Notification[]
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+  BOOKING
+}
+
+model ForumCategory {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  slug        String      @unique
+  description String?
+  order       Int         @default(0)
+  
+  posts       ForumPost[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model ForumPost {
+  id          String        @id @default(cuid())
+  title       String
+  content     String        // Markdown support
+  authorId    String
+  author      User          @relation(fields: [authorId], references: [id])
+  categoryId  String
+  category    ForumCategory @relation(fields: [categoryId], references: [id])
+  
+  views       Int           @default(0)
+  isPinned    Boolean       @default(false)
+  isLocked    Boolean       @default(false)
+  
+  comments    ForumComment[]
+  likes       ForumLike[]
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model ForumComment {
+  id          String    @id @default(cuid())
+  content     String
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  postId      String
+  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  parentId    String?   // For nested comments
+  parent      ForumComment? @relation("CommentToComment", fields: [parentId], references: [id])
+  replies     ForumComment[] @relation("CommentToComment")
+  
+  likes       ForumLike[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ForumLike {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  
+  postId      String?
+  post        ForumPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  commentId   String?
+  comment     ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime      @default(now())
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+}
+
+model BannedIp {
+  id        String   @id @default(cuid())
+  ip        String   @unique
+  reason    String?
+  createdAt DateTime @default(now())
+  createdBy String?  // User ID of admin who banned
 }
 
 model Payment {

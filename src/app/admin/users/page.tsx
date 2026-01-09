@@ -11,6 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { DeleteUserButton } from "@/components/admin/delete-user-button";
+import { UserRoleSelector } from "@/components/admin/user-role-selector";
+import { UserSubscriptionSelector } from "@/components/admin/user-subscription-selector";
+import { BanUserButton } from "@/components/admin/ban-user-button";
 import { currentUser } from "@clerk/nextjs/server";
 
 export default async function AdminUsersPage() {
@@ -20,6 +23,13 @@ export default async function AdminUsersPage() {
 
   const user = await currentUser();
   const currentUserId = user?.id;
+
+  // Fetch current user from DB to get their role
+  const dbUser = user
+    ? await prisma.user.findUnique({
+        where: { clerkId: user.id },
+      })
+    : null;
 
   return (
     <div className="space-y-6">
@@ -34,6 +44,7 @@ export default async function AdminUsersPage() {
               <TableHead>Пользователь</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Роль</TableHead>
+              <TableHead>Подписка</TableHead>
               <TableHead>Дата регистрации</TableHead>
               <TableHead className="text-right">Действия</TableHead>
             </TableRow>
@@ -55,16 +66,38 @@ export default async function AdminUsersPage() {
                 </TableCell>
                 <TableCell>{u.email}</TableCell>
                 <TableCell>
-                  <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>
-                    {u.role}
-                  </Badge>
+                  <UserRoleSelector
+                    userId={u.id}
+                    currentRole={u.role}
+                    viewerRole={dbUser?.role}
+                    disabled={u.clerkId === currentUserId}
+                  />
+                </TableCell>
+                <TableCell>
+                  <UserSubscriptionSelector
+                    userId={u.id}
+                    currentPlan={u.subscriptionPlan}
+                    disabled={
+                      dbUser?.role !== "OWNER" && dbUser?.role !== "ADMIN"
+                    }
+                  />
                 </TableCell>
                 <TableCell>
                   {format(u.createdAt, "dd MMM yyyy", { locale: ru })}
                 </TableCell>
                 <TableCell className="text-right">
                   {u.clerkId !== currentUserId && (
-                    <DeleteUserButton userId={u.id} />
+                    <div className="flex items-center justify-end gap-2">
+                      <BanUserButton
+                        userId={u.id}
+                        isBanned={u.isBanned}
+                        disabled={
+                          u.role === "OWNER" ||
+                          (u.role === "ADMIN" && dbUser?.role !== "OWNER")
+                        }
+                      />
+                      <DeleteUserButton userId={u.id} />
+                    </div>
                   )}
                 </TableCell>
               </TableRow>

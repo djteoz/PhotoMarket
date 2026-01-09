@@ -5,17 +5,28 @@ import { Camera, MessageSquare, User, Shield } from "lucide-react";
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { MobileNav } from "./mobile-nav";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 export async function Header() {
   const user = await currentUser();
   let isAdmin = false;
+  let notifications: any[] = [];
 
   if (user) {
     const dbUser = await prisma.user.findUnique({
       where: { clerkId: user.id },
-      select: { role: true },
+      select: { id: true, role: true },
     });
-    isAdmin = dbUser?.role === "ADMIN";
+
+    if (dbUser) {
+      isAdmin = dbUser.role === "ADMIN";
+
+      notifications = await prisma.notification.findMany({
+        where: { userId: dbUser.id },
+        orderBy: { createdAt: "desc" },
+        take: 20,
+      });
+    }
   }
 
   return (
@@ -29,6 +40,12 @@ export async function Header() {
         <nav className="hidden md:flex items-center gap-6">
           <Link href="/catalog" className="text-sm font-medium hover:underline">
             Каталог студий
+          </Link>
+          <Link
+            href="/community"
+            className="text-sm font-medium hover:underline"
+          >
+            Сообщество
           </Link>
           <Link href="/about" className="text-sm font-medium hover:underline">
             О нас
@@ -52,6 +69,7 @@ export async function Header() {
                 </Link>
               </Button>
             )}
+            <NotificationBell initialNotifications={notifications} />
             <Button variant="ghost" size="icon" asChild title="Сообщения">
               <Link href="/messages">
                 <MessageSquare className="h-5 w-5" />

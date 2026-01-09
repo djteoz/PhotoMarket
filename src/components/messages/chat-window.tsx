@@ -4,11 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { Message, User } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { sendMessage } from "@/app/actions/messages";
+import { sendMessage, getMessages } from "@/app/actions/messages";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Send } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 
 interface ChatWindowProps {
   conversationId: string;
@@ -25,22 +25,47 @@ export function ChatWindow({
 }: ChatWindowProps) {
   const [messages, setMessages] = useState(initialMessages);
   const [newMessage, setNewMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Auto-scroll to bottom on new messages
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!newMessage.trim()) return;
+  // Polling for new messages every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const freshMessages = await getMessages(conversationId);
+        // Only update if we have new messages (simple length check for MVP)
+        // ideally we check IDs but this saves renders if length matches and we assume no deletion
+        if (freshMessages.length !== messages.length) {
+          setMessages(freshMessages);
+        }
+      } catch (error) {
+        console.error("Failed to fetch messages", error);
+      }
+    }, 3000);
 
+    return () => clearInterval(interval);
+  }, [conversationId, messages.length]);
+
+  const handleSend = async () => {
+    if (!newMessage.trim() || isSending) return;
+
+    setIsSending(true);
+    const content = newMessage;
+    setNewMessage(""); // Clear input immediately
+
+    // Optimistic update
     const tempMessage: Message & { sender: User } = {
       id: Date.now().toString(),
       conversationId,
       senderId: currentUserId,
-      content: newMessage,
+      content: content,
       createdAt: new Date(),
       read: false,
       sender: {
@@ -59,9 +84,15 @@ export function ChatWindow({
     };
 
     setMessages((prev) => [...prev, tempMessage]);
-    setNewMessage("");
 
-    await sendMessage(conversationId, tempMessage.content);
+    try {
+      await sendMessage(conversationId, content);
+    } catch (error) {
+      // Rollback on error could go here
+      console.error("Failed to send message");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -111,9 +142,14 @@ export function ChatWindow({
           onChange={(e) => setNewMessage(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder="Напишите сообщение..."
+          disabled={isSending}
         />
-        <Button onClick={handleSend} size="icon">
-          <Send className="h-4 w-4" />
+        <Button onClick={handleSend} size="icon" disabled={isSending}>
+          {isSending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
         </Button>
       </div>
     </div>

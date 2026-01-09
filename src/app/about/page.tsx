@@ -60,10 +60,10 @@ export default function AboutPage() {
             Есть вопросы или предложения? Напишите нам:
             <br />
             <a
-              href="mailto:support@photomarket.ru"
+              href="mailto:support@photomarket.tech"
               className="text-primary hover:underline"
             >
-              support@photomarket.ru
+              support@photomarket.tech
             </a>
           </p>
         </section>

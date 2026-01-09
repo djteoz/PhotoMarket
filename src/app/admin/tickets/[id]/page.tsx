@@ -98,6 +98,19 @@ export default async function TicketDetailsPage({
                   </span>
                 </div>
               </div>
+
+              <div className="pt-4">
+                <Button asChild className="w-full">
+                  <a
+                    href={`mailto:${
+                      ticket.email
+                    }?subject=Re: ${encodeURIComponent(ticket.subject)}`}
+                  >
+                    <Mail className="w-4 h-4 mr-2" />
+                    Ответить на Email
+                  </a>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
