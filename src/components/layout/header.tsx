@@ -19,7 +19,10 @@ export async function Header() {
     });
 
     if (dbUser) {
-      isAdmin = dbUser.role === "ADMIN";
+      isAdmin =
+        dbUser.role === "ADMIN" ||
+        dbUser.role === "OWNER" ||
+        dbUser.role === "MODERATOR";
 
       notifications = await prisma.notification.findMany({
         where: { userId: dbUser.id },
