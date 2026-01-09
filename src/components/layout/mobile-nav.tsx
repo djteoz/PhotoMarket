@@ -28,6 +28,7 @@ export function MobileNav({ isAdmin }: MobileNavProps) {
 
   const links = [
     { href: "/catalog", label: "Каталог студий" },
+    { href: "/community", label: "Сообщество" },
     { href: "/about", label: "О нас" },
     { href: "/contacts", label: "Контакты" },
   ];

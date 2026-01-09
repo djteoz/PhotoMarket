@@ -89,15 +89,15 @@ export function BanUserButton({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="reason" className="text-right">
+          <div className="grid grid-cols-1 md:grid-cols-4 items-center gap-2 md:gap-4">
+            <Label htmlFor="reason" className="text-left md:text-right">
               Причина
             </Label>
             <Input
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="col-span-3"
+              className="col-span-1 md:col-span-3"
               placeholder="Нарушение правил..."
             />
           </div>
