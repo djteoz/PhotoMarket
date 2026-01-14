@@ -63,7 +63,7 @@ export async function createPromotion(
     return { error: "Нет доступа к этой студии" };
   }
 
-  const amount = getPromotionPrice(type, duration);
+  const amount = await getPromotionPrice(type, duration);
   const durationDays = duration === "day" ? 1 : duration === "week" ? 7 : 30;
 
   const startDate = new Date();
