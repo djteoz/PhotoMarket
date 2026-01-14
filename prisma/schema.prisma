@@ -24,15 +24,15 @@ enum SubscriptionPlan {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  clerkId   String   @unique // External Auth ID from Clerk
-  email     String   @unique
-  name      String?
-  phone     String?
-  image     String?
-  role      Role     @default(USER)
-  
-  subscriptionPlan SubscriptionPlan @default(FREE)
+  id      String  @id @default(cuid())
+  clerkId String  @unique // External Auth ID from Clerk
+  email   String  @unique
+  name    String?
+  phone   String?
+  image   String?
+  role    Role    @default(USER)
+
+  subscriptionPlan   SubscriptionPlan @default(FREE)
   subscriptionEndsAt DateTime?
 
   createdAt DateTime @default(now())
@@ -43,12 +43,12 @@ model User {
   reviews   Review[]
   favorites Favorite[]
   payments  Payment[]
-  
+
   conversations Conversation[]
   messages      Message[]
 
-  isBanned      Boolean   @default(false)
-  banReason     String?
+  isBanned  Boolean @default(false)
+  banReason String?
 
   forumPosts    ForumPost[]
   forumComments ForumComment[]
@@ -79,68 +79,68 @@ enum NotificationType {
 }
 
 model ForumCategory {
-  id          String      @id @default(cuid())
-  name        String      @unique
-  slug        String      @unique
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
   description String?
-  order       Int         @default(0)
-  
-  posts       ForumPost[]
-  
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  order       Int     @default(0)
+
+  posts ForumPost[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ForumPost {
-  id          String        @id @default(cuid())
-  title       String
-  content     String        // Markdown support
-  authorId    String
-  author      User          @relation(fields: [authorId], references: [id])
-  categoryId  String
-  category    ForumCategory @relation(fields: [categoryId], references: [id])
-  
-  views       Int           @default(0)
-  isPinned    Boolean       @default(false)
-  isLocked    Boolean       @default(false)
-  
-  comments    ForumComment[]
-  likes       ForumLike[]
-  
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id         String        @id @default(cuid())
+  title      String
+  content    String // Markdown support
+  authorId   String
+  author     User          @relation(fields: [authorId], references: [id])
+  categoryId String
+  category   ForumCategory @relation(fields: [categoryId], references: [id])
+
+  views    Int     @default(0)
+  isPinned Boolean @default(false)
+  isLocked Boolean @default(false)
+
+  comments ForumComment[]
+  likes    ForumLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ForumComment {
-  id          String    @id @default(cuid())
-  content     String
-  authorId    String
-  author      User      @relation(fields: [authorId], references: [id])
-  postId      String
-  post        ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
-  parentId    String?   // For nested comments
-  parent      ForumComment? @relation("CommentToComment", fields: [parentId], references: [id])
-  replies     ForumComment[] @relation("CommentToComment")
-  
-  likes       ForumLike[]
-  
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id       String    @id @default(cuid())
+  content  String
+  authorId String
+  author   User      @relation(fields: [authorId], references: [id])
+  postId   String
+  post     ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  parentId String? // For nested comments
+  parent   ForumComment?  @relation("CommentToComment", fields: [parentId], references: [id])
+  replies  ForumComment[] @relation("CommentToComment")
+
+  likes ForumLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model ForumLike {
-  id          String        @id @default(cuid())
-  userId      String
-  user        User          @relation(fields: [userId], references: [id])
-  
-  postId      String?
-  post        ForumPost?    @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
-  commentId   String?
-  comment     ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime      @default(now())
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  postId String?
+  post   ForumPost? @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  commentId String?
+  comment   ForumComment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 
   @@unique([userId, postId])
   @@unique([userId, commentId])
@@ -151,21 +151,21 @@ model BannedIp {
   ip        String   @unique
   reason    String?
   createdAt DateTime @default(now())
-  createdBy String?  // User ID of admin who banned
+  createdBy String? // User ID of admin who banned
 }
 
 model Payment {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  amount      Decimal
-  currency    String   @default("RUB")
-  provider    String   // "YOOKASSA" | "ROBOKASSA"
-  externalId  String?  // ID from the provider
-  status      String   // "PENDING", "SUCCEEDED", "CANCELED"
-  plan        SubscriptionPlan
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String           @id @default(cuid())
+  userId     String
+  user       User             @relation(fields: [userId], references: [id])
+  amount     Decimal
+  currency   String           @default("RUB")
+  provider   String // "YOOKASSA" | "ROBOKASSA"
+  externalId String? // ID from the provider
+  status     String // "PENDING", "SUCCEEDED", "CANCELED"
+  plan       SubscriptionPlan
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
 }
 
 model Studio {
@@ -181,35 +181,79 @@ model Studio {
   phone       String?
   email       String?
   images      String[] // URLs
-  
-  rooms       Room[]
-  reviews     Review[]
-  favorites   Favorite[]
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  // Promoted listing
+  isPromoted    Boolean   @default(false)
+  promotedUntil DateTime?
+  promotionType String? // "TOP", "FEATURED", "HIGHLIGHT"
+
+  // Analytics
+  views Int @default(0)
+
+  rooms      Room[]
+  reviews    Review[]
+  favorites  Favorite[]
+  analytics  StudioAnalytics[]
+  promotions Promotion[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Studio Analytics for detailed tracking
+model StudioAnalytics {
+  id       String @id @default(cuid())
+  studioId String
+  studio   Studio @relation(fields: [studioId], references: [id], onDelete: Cascade)
+
+  date     DateTime @db.Date
+  views    Int      @default(0)
+  clicks   Int      @default(0)
+  bookings Int      @default(0)
+  revenue  Decimal  @default(0)
+
+  @@unique([studioId, date])
+  @@index([studioId])
+  @@index([date])
+}
+
+// Promotion history
+model Promotion {
+  id       String @id @default(cuid())
+  studioId String
+  studio   Studio @relation(fields: [studioId], references: [id], onDelete: Cascade)
+
+  type      String // "TOP", "FEATURED", "HIGHLIGHT"
+  startDate DateTime
+  endDate   DateTime
+  amount    Decimal
+  status    String   @default("ACTIVE") // "ACTIVE", "EXPIRED", "CANCELLED"
+
+  createdAt DateTime @default(now())
+
+  @@index([studioId])
 }
 
 model Room {
-  id              String   @id @default(cuid())
+  id              String  @id @default(cuid())
   studioId        String
-  studio          Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  studio          Studio  @relation(fields: [studioId], references: [id], onDelete: Cascade)
   name            String
   description     String?
   pricePerHour    Decimal
-  area            Float    // sq meters
+  area            Float // sq meters
   capacity        Int?
-  hasNaturalLight Boolean  @default(false)
-  
-  images          String[]
-  amenities       Amenity[] // Many-to-many
-  bookings        Booking[]
+  hasNaturalLight Boolean @default(false)
+
+  images    String[]
+  amenities Amenity[] // Many-to-many
+  bookings  Booking[]
 
   icalImportUrl   String?
-  icalExportToken String   @default(cuid())
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  icalExportToken String  @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Amenity {
@@ -226,42 +270,42 @@ enum BookingStatus {
 }
 
 model Booking {
-  id        String        @id @default(cuid())
-  userId    String
-  user      User          @relation(fields: [userId], references: [id])
-  roomId    String
-  room      Room          @relation(fields: [roomId], references: [id])
-  startTime DateTime
-  endTime   DateTime
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id])
+  roomId     String
+  room       Room          @relation(fields: [roomId], references: [id])
+  startTime  DateTime
+  endTime    DateTime
   totalPrice Decimal
-  status    BookingStatus @default(PENDING)
-  
-  source    String        @default("INTERNAL") // "INTERNAL" | "ICAL"
-  externalId String?      // UID from iCal event
+  status     BookingStatus @default(PENDING)
 
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  source     String  @default("INTERNAL") // "INTERNAL" | "ICAL"
+  externalId String? // UID from iCal event
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Review {
-  id        String   @id @default(cuid())
-  rating    Int
-  comment   String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  studioId  String
-  studio    Studio   @relation(fields: [studioId], references: [id])
-  
+  id       String  @id @default(cuid())
+  rating   Int
+  comment  String?
+  userId   String
+  user     User    @relation(fields: [userId], references: [id])
+  studioId String
+  studio   Studio  @relation(fields: [studioId], references: [id])
+
   createdAt DateTime @default(now())
 }
 
 model Favorite {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  studioId  String
-  studio    Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
-  
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+  studioId String
+  studio   Studio @relation(fields: [studioId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 
   @@unique([userId, studioId])
@@ -279,12 +323,12 @@ model SupportTicket {
 }
 
 model Conversation {
-  id        String    @id @default(cuid())
-  users     User[]
-  messages  Message[]
-  
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id       String    @id @default(cuid())
+  users    User[]
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Message {
@@ -295,7 +339,6 @@ model Message {
   sender         User         @relation(fields: [senderId], references: [id])
   content        String
   read           Boolean      @default(false)
-  
-  createdAt      DateTime     @default(now())
-}
 
+  createdAt DateTime @default(now())
+}
