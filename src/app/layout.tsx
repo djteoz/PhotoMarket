@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -9,20 +9,37 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { PWAInstallPrompt } from "@/components/pwa/pwa-install-prompt";
+import { OrganizationJsonLd } from "@/components/seo/json-ld";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.photomarket.tech";
 
 export const metadata: Metadata = {
-  title: "PhotoMarket - Агрегатор фотостудий",
-  description: "Найдите и забронируйте лучшую фотостудию для вашей съемки",
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: "PhotoMarket — агрегатор фотостудий России",
+    template: "%s | PhotoMarket",
+  },
+  description: "Найдите и забронируйте идеальную фотостудию для съёмки в Москве, Санкт-Петербурге и других городах России. Сравнивайте цены, читайте отзывы, бронируйте онлайн.",
+  keywords: [
+    "фотостудия",
+    "аренда фотостудии",
+    "фотостудия москва",
+    "фотостудия спб",
+    "бронирование фотостудии",
+    "съёмка в студии",
+    "фотосессия",
+    "циклорама",
+    "фотозал"
+  ],
+  authors: [{ name: "PhotoMarket" }],
+  creator: "PhotoMarket",
+  publisher: "PhotoMarket",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon",
@@ -36,6 +53,40 @@ export const metadata: Metadata = {
   verification: {
     yandex: process.env.NEXT_PUBLIC_YANDEX_VERIFICATION,
     google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+  },
+  openGraph: {
+    type: "website",
+    locale: "ru_RU",
+    url: baseUrl,
+    siteName: "PhotoMarket",
+    title: "PhotoMarket — агрегатор фотостудий России",
+    description: "Найдите и забронируйте идеальную фотостудию для съёмки. Сравнивайте цены, читайте отзывы, бронируйте онлайн.",
+    images: [{
+      url: "/og-image.jpg",
+      width: 1200,
+      height: 630,
+      alt: "PhotoMarket — агрегатор фотостудий",
+    }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PhotoMarket — агрегатор фотостудий России",
+    description: "Найдите и забронируйте идеальную фотостудию для съёмки.",
+    images: ["/og-image.jpg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: baseUrl,
   },
 };
 
@@ -55,8 +106,11 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="ru">
+        <head>
+          <OrganizationJsonLd />
+        </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+          className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}
         >
           <Suspense fallback={null}>
             <YandexMetrika />

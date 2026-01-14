@@ -22,6 +22,7 @@ import { ru } from "date-fns/locale";
 import SearchMap from "@/components/search/search-map-wrapper";
 import { ContactOwnerButton } from "@/components/studios/contact-owner-button";
 import { Metadata } from "next";
+import { StudioJsonLd, BreadcrumbJsonLd } from "@/components/seo/json-ld";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -29,22 +30,65 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.photomarket.tech";
+  
   const studio = await prisma.studio.findUnique({
     where: { id },
-    select: { name: true, description: true, images: true },
+    select: { 
+      name: true, 
+      description: true, 
+      images: true, 
+      city: true,
+      address: true 
+    },
   });
 
   if (!studio) {
     return {
-      title: "Студия не найдена",
+      title: "Студия не найдена | PhotoMarket",
     };
   }
 
+  const description = studio.description?.slice(0, 155) 
+    || `Фотостудия ${studio.name} в ${studio.city}. Бронируйте онлайн на PhotoMarket.`;
+
   return {
-    title: `${studio.name} | PhotoMarket`,
-    description: studio.description?.slice(0, 160) || "Аренда фотостудии",
+    title: `${studio.name} — фотостудия в ${studio.city} | PhotoMarket`,
+    description,
+    keywords: [
+      "фотостудия",
+      studio.city,
+      "аренда фотостудии",
+      "съемка",
+      studio.name,
+      "бронирование фотостудии"
+    ],
+    alternates: {
+      canonical: `${baseUrl}/studios/${id}`,
+    },
     openGraph: {
+      title: `${studio.name} — фотостудия в ${studio.city}`,
+      description,
+      url: `${baseUrl}/studios/${id}`,
+      siteName: "PhotoMarket",
+      images: studio.images[0] ? [{
+        url: studio.images[0],
+        width: 1200,
+        height: 630,
+        alt: studio.name,
+      }] : [],
+      locale: "ru_RU",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${studio.name} — фотостудия в ${studio.city}`,
+      description,
       images: studio.images[0] ? [studio.images[0]] : [],
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   };
 }
@@ -106,41 +150,61 @@ export default async function StudioPage({ params }: Props) {
 
   const isOwner = user?.id === studio.owner.clerkId || dbUser?.role === "ADMIN";
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.photomarket.tech";
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">{studio.name}</h1>
-          <div className="flex items-center text-gray-600 gap-4 text-sm">
-            <span className="flex items-center gap-1">
-              <MapPin className="h-4 w-4" />
-              {studio.city}, {studio.address}
-            </span>
-            <span className="flex items-center gap-1">
-              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-              {averageRating > 0 ? averageRating.toFixed(1) : "Нет оценок"} (
-              {studio.reviews.length} отзывов)
-            </span>
+    <>
+      {/* JSON-LD структурированные данные */}
+      <StudioJsonLd 
+        studio={studio}
+        rooms={studio.rooms.map(r => ({ name: r.name, pricePerHour: Number(r.pricePerHour) }))}
+        reviews={studio.reviews}
+        averageRating={averageRating}
+        reviewCount={studio.reviews.length}
+      />
+      <BreadcrumbJsonLd 
+        items={[
+          { name: "Главная", url: baseUrl },
+          { name: "Каталог", url: `${baseUrl}/catalog` },
+          { name: studio.city, url: `${baseUrl}/search?city=${encodeURIComponent(studio.city)}` },
+          { name: studio.name, url: `${baseUrl}/studios/${studio.id}` },
+        ]}
+      />
+      
+      <div className="container mx-auto py-8 px-4">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{studio.name}</h1>
+            <div className="flex items-center text-gray-600 gap-4 text-sm">
+              <span className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                {studio.city}, {studio.address}
+              </span>
+              <span className="flex items-center gap-1">
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                {averageRating > 0 ? averageRating.toFixed(1) : "Нет оценок"} (
+                {studio.reviews.length} отзывов)
+              </span>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {isOwner && (
+              <Button variant="outline" asChild>
+                <Link href={`/studios/${studio.id}/edit`}>
+                  <Edit className="h-4 w-4 mr-2" /> Редактировать
+                </Link>
+              </Button>
+            )}
+            <Button variant="outline" size="icon">
+              <Share className="h-4 w-4" />
+            </Button>
+            <FavoriteButton studioId={studio.id} initialIsFavorite={isFavorite} />
           </div>
         </div>
-        <div className="flex gap-2">
-          {isOwner && (
-            <Button variant="outline" asChild>
-              <Link href={`/studios/${studio.id}/edit`}>
-                <Edit className="h-4 w-4 mr-2" /> Редактировать
-              </Link>
-            </Button>
-          )}
-          <Button variant="outline" size="icon">
-            <Share className="h-4 w-4" />
-          </Button>
-          <FavoriteButton studioId={studio.id} initialIsFavorite={isFavorite} />
-        </div>
-      </div>
 
-      {/* Gallery Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[400px] mb-12 rounded-xl overflow-hidden">
+        {/* Gallery Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-[400px] mb-12 rounded-xl overflow-hidden">
         <div className="md:col-span-2 h-full bg-gray-200 relative">
           {studio.images[0] ? (
             <Image
@@ -407,6 +471,7 @@ export default async function StudioPage({ params }: Props) {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
