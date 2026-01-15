@@ -45,9 +45,7 @@ export default function RequisitesPage() {
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-muted-foreground">
-                      Получатель
-                    </p>
+                    <p className="text-sm text-muted-foreground">Получатель</p>
                     <p className="font-medium">Игонькин Александр Валерьевич</p>
                   </div>
                   <div>
@@ -70,16 +68,16 @@ export default function RequisitesPage() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Банк</p>
-                    <p className="font-medium">Калужское отделение №8608 ПАО Сбербанк</p>
+                    <p className="font-medium">
+                      Калужское отделение №8608 ПАО Сбербанк
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">БИК</p>
                     <p className="font-medium font-mono">042908612</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">
-                      Номер счёта
-                    </p>
+                    <p className="text-sm text-muted-foreground">Номер счёта</p>
                     <p className="font-medium font-mono">
                       40817810677031163288
                     </p>
