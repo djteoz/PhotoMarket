@@ -27,7 +27,7 @@ export default async function ProfilePage() {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
-  const dbUser = await prisma.user.findUnique({
+  let dbUser = await prisma.user.findUnique({
     where: { clerkId: user.id },
     include: {
       _count: {
@@ -42,7 +42,29 @@ export default async function ProfilePage() {
     },
   });
 
-  if (!dbUser) redirect("/sign-in");
+  // Создаём пользователя если его нет в БД
+  if (!dbUser) {
+    dbUser = await prisma.user.create({
+      data: {
+        clerkId: user.id,
+        email: user.emailAddresses[0]?.emailAddress || "",
+        name: user.firstName
+          ? `${user.firstName} ${user.lastName || ""}`.trim()
+          : null,
+      },
+      include: {
+        _count: {
+          select: {
+            studios: true,
+            bookings: true,
+            favorites: true,
+            reviews: true,
+            sentMessages: true,
+          },
+        },
+      },
+    });
+  }
 
   const subscriptionLabels: Record<string, string> = {
     FREE: "Базовый",
