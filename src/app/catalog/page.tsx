@@ -109,27 +109,40 @@ export default async function CatalogPage({
   return (
     <div className="flex flex-col">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-bold mb-3">
+      <section className="relative bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 text-white py-16 overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-1/2 -right-1/4 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-1/2 -left-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+              <Camera className="h-6 w-6" />
+            </div>
+            <span className="text-white/80 text-sm font-medium">Все фотостудии России</span>
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
             Каталог фотостудий
           </h1>
-          <p className="text-slate-300 max-w-2xl">
+          <p className="text-white/80 text-lg max-w-2xl">
             {studios.length} студий и {totalRooms} залов для аренды в{" "}
-            {cities.length} городах России
+            {cities.length} городах России. Найдите идеальное место для съёмки.
           </p>
 
           {/* City Tags */}
-          <div className="flex flex-wrap gap-2 mt-6">
+          <div className="flex flex-wrap gap-2 mt-8">
             {cities.slice(0, 8).map((c) => (
               <Link
                 key={c.city}
                 href={`/city/${getCitySlug(c.city)}`}
                 className={cn(
-                  "px-3 py-1.5 rounded-full text-sm transition-colors",
+                  "px-4 py-2 rounded-full text-sm font-medium transition-all",
                   city === c.city
-                    ? "bg-white text-slate-900"
-                    : "bg-white/10 hover:bg-white/20"
+                    ? "bg-white text-purple-700 shadow-lg"
+                    : "bg-white/20 hover:bg-white/30 backdrop-blur-sm"
                 )}
               >
                 {c.city} ({c._count.city})
