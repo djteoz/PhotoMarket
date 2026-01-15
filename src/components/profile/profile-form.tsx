@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { User } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,7 +15,12 @@ import {
 } from "lucide-react";
 
 interface ProfileFormProps {
-  user: User;
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    phone: string | null;
+  };
 }
 
 export function ProfileForm({ user }: ProfileFormProps) {

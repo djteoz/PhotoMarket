@@ -44,13 +44,13 @@ export default async function ProfilePage() {
 
   if (!dbUser) redirect("/sign-in");
 
-  const subscriptionLabels = {
+  const subscriptionLabels: Record<string, string> = {
     FREE: "Базовый",
     PRO: "Профессионал",
     BUSINESS: "Бизнес",
   };
 
-  const subscriptionColors = {
+  const subscriptionColors: Record<string, string> = {
     FREE: "bg-slate-100 text-slate-700",
     PRO: "bg-purple-100 text-purple-700",
     BUSINESS: "bg-amber-100 text-amber-700",
@@ -214,7 +214,14 @@ export default async function ProfilePage() {
                 </p>
               </div>
               <div className="p-6">
-                <ProfileForm user={dbUser} />
+                <ProfileForm
+                  user={{
+                    id: dbUser.id,
+                    email: dbUser.email,
+                    name: dbUser.name,
+                    phone: dbUser.phone,
+                  }}
+                />
               </div>
             </div>
           </div>

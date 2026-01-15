@@ -5,13 +5,13 @@ export const runtime = "edge";
 
 // Image metadata
 export const size = {
-  width: 32,
-  height: 32,
+  width: 180,
+  height: 180,
 };
 export const contentType = "image/png";
 
 // Image generation
-export default function Icon() {
+export default function AppleIcon() {
   return new ImageResponse(
     (
       <div
@@ -22,17 +22,17 @@ export default function Icon() {
           alignItems: "center",
           justifyContent: "center",
           background: "linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)",
-          borderRadius: "8px",
+          borderRadius: "40px",
         }}
       >
         {/* Camera icon SVG */}
         <svg
-          width="20"
-          height="20"
+          width="100"
+          height="100"
           viewBox="0 0 24 24"
           fill="none"
           stroke="white"
-          strokeWidth="2.5"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
         >

@@ -76,7 +76,9 @@ export default async function CreatePostPage() {
                   </li>
                   <li className="flex gap-2">
                     <span className="text-purple-500">•</span>
-                    <span>Опишите вопрос подробно — так легче получить ответ</span>
+                    <span>
+                      Опишите вопрос подробно — так легче получить ответ
+                    </span>
                   </li>
                   <li className="flex gap-2">
                     <span className="text-purple-500">•</span>

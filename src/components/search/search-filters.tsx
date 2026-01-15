@@ -6,6 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import {
+  MapPin,
+  Banknote,
+  Maximize2,
+  Sun,
+  SlidersHorizontal,
+  X,
+  Sparkles,
+} from "lucide-react";
 
 export function SearchFilters() {
   const router = useRouter();
@@ -54,69 +63,130 @@ export function SearchFilters() {
     router.push(`/search?${params.toString()}`);
   };
 
+  const hasActiveFilters = !!(
+    city ||
+    minPrice ||
+    maxPrice ||
+    minArea ||
+    hasNaturalLight
+  );
+
   return (
-    <div className="space-y-6 p-4 border rounded-lg bg-white h-fit sticky top-4">
-      <div>
-        <h3 className="font-semibold mb-4">Фильтры</h3>
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 sticky top-4 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="font-bold flex items-center gap-2">
+          <SlidersHorizontal className="w-5 h-5 text-purple-600" />
+          Фильтры
+        </h3>
+        {hasActiveFilters && (
+          <button
+            onClick={clearFilters}
+            className="text-xs text-slate-500 hover:text-red-500 flex items-center gap-1 transition-colors"
+          >
+            <X className="w-3 h-3" />
+            Сбросить
+          </button>
+        )}
+      </div>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Город</Label>
-            <Input
-              placeholder="Москва"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-            />
-          </div>
+      {/* City Filter */}
+      <div className="space-y-3">
+        <Label className="flex items-center gap-2 text-sm font-medium">
+          <MapPin className="w-4 h-4 text-purple-500" />
+          Город
+        </Label>
+        <Input
+          placeholder="Москва, Санкт-Петербург..."
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 rounded-xl"
+        />
+      </div>
 
-          <div className="space-y-2">
-            <Label>Цена (₽/час)</Label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="От"
-                type="number"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value)}
-              />
-              <Input
-                placeholder="До"
-                type="number"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Площадь (м²)</Label>
-            <Input
-              placeholder="От"
-              type="number"
-              value={minArea}
-              onChange={(e) => setMinArea(e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="natural-light"
-              checked={hasNaturalLight}
-              onCheckedChange={(checked) =>
-                setHasNaturalLight(checked as boolean)
-              }
-            />
-            <Label htmlFor="natural-light">Естественный свет</Label>
-          </div>
-
-          <div className="pt-4 flex flex-col gap-2">
-            <Button onClick={applyFilters} className="w-full">
-              Применить
-            </Button>
-            <Button variant="outline" onClick={clearFilters} className="w-full">
-              Сбросить
-            </Button>
-          </div>
+      {/* Price Filter */}
+      <div className="space-y-3">
+        <Label className="flex items-center gap-2 text-sm font-medium">
+          <Banknote className="w-4 h-4 text-green-500" />
+          Цена (₽/час)
+        </Label>
+        <div className="flex gap-2">
+          <Input
+            placeholder="От"
+            type="number"
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
+            className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 rounded-xl"
+          />
+          <span className="flex items-center text-slate-400">—</span>
+          <Input
+            placeholder="До"
+            type="number"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+            className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 rounded-xl"
+          />
         </div>
+      </div>
+
+      {/* Area Filter */}
+      <div className="space-y-3">
+        <Label className="flex items-center gap-2 text-sm font-medium">
+          <Maximize2 className="w-4 h-4 text-blue-500" />
+          Площадь (м²)
+        </Label>
+        <Input
+          placeholder="Минимальная площадь"
+          type="number"
+          value={minArea}
+          onChange={(e) => setMinArea(e.target.value)}
+          className="bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-purple-500 rounded-xl"
+        />
+      </div>
+
+      {/* Natural Light Checkbox */}
+      <div className="flex items-center gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl">
+        <Checkbox
+          id="natural-light"
+          checked={hasNaturalLight}
+          onCheckedChange={(checked) => setHasNaturalLight(checked as boolean)}
+          className="border-yellow-400 data-[state=checked]:bg-yellow-500 data-[state=checked]:border-yellow-500"
+        />
+        <Label
+          htmlFor="natural-light"
+          className="flex items-center gap-2 cursor-pointer"
+        >
+          <Sun className="w-4 h-4 text-yellow-500" />
+          <span className="text-sm">Естественный свет</span>
+        </Label>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="pt-2 space-y-3">
+        <Button
+          onClick={applyFilters}
+          className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 rounded-xl h-11 gap-2"
+        >
+          <Sparkles className="w-4 h-4" />
+          Применить фильтры
+        </Button>
+        {hasActiveFilters && (
+          <Button
+            variant="outline"
+            onClick={clearFilters}
+            className="w-full rounded-xl h-11"
+          >
+            Сбросить фильтры
+          </Button>
+        )}
+      </div>
+
+      {/* Tips */}
+      <div className="text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700 pt-4">
+        <p>
+          💡 Совет: используйте фильтры для более точного поиска идеальной
+          студии
+        </p>
       </div>
     </div>
   );

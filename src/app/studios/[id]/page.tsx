@@ -1,7 +1,22 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, Share, Edit } from "lucide-react";
+import {
+  MapPin,
+  Star,
+  Share,
+  Edit,
+  Phone,
+  Mail,
+  Clock,
+  Building2,
+  Sun,
+  Camera,
+  MessageSquare,
+  ArrowRight,
+  Sparkles,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import { BookingForm } from "@/components/booking/booking-form";
 import {
@@ -178,250 +193,364 @@ export default async function StudioPage({ params }: Props) {
       {/* Track page views */}
       <ViewTracker studioId={studio.id} />
 
-      <div className="container mx-auto py-8 px-4">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{studio.name}</h1>
-            <div className="flex items-center text-gray-600 gap-4 text-sm">
-              <span className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                {studio.city}, {studio.address}
-              </span>
-              <span className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                {averageRating > 0 ? averageRating.toFixed(1) : "Нет оценок"} (
-                {studio.reviews.length} отзывов)
-              </span>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        {/* Hero Header */}
+        <section className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+              <div>
+                <div className="flex items-center gap-2 text-slate-400 text-sm mb-2">
+                  <Link
+                    href="/catalog"
+                    className="hover:text-white transition-colors"
+                  >
+                    Каталог
+                  </Link>
+                  <span>/</span>
+                  <Link
+                    href={`/search?city=${encodeURIComponent(studio.city)}`}
+                    className="hover:text-white transition-colors"
+                  >
+                    {studio.city}
+                  </Link>
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold mb-3">
+                  {studio.name}
+                </h1>
+                <div className="flex flex-wrap items-center gap-4 text-sm">
+                  <span className="flex items-center gap-1.5 text-slate-300">
+                    <MapPin className="h-4 w-4 text-purple-400" />
+                    {studio.city}, {studio.address}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-white font-medium">
+                      {averageRating > 0 ? averageRating.toFixed(1) : "Новая"}
+                    </span>
+                    <span className="text-slate-400">
+                      ({studio.reviews.length} отзывов)
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-1.5 text-slate-300">
+                    <Building2 className="h-4 w-4 text-purple-400" />
+                    {studio.rooms.length}{" "}
+                    {studio.rooms.length === 1
+                      ? "зал"
+                      : studio.rooms.length < 5
+                      ? "зала"
+                      : "залов"}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {isOwner && (
+                  <Button variant="secondary" asChild>
+                    <Link href={`/studios/${studio.id}/edit`}>
+                      <Edit className="h-4 w-4 mr-2" /> Редактировать
+                    </Link>
+                  </Button>
+                )}
+                <Button variant="secondary" size="icon">
+                  <Share className="h-4 w-4" />
+                </Button>
+                <FavoriteButton
+                  studioId={studio.id}
+                  initialIsFavorite={isFavorite}
+                />
+              </div>
             </div>
           </div>
-          <div className="flex gap-2">
-            {isOwner && (
-              <Button variant="outline" asChild>
-                <Link href={`/studios/${studio.id}/edit`}>
-                  <Edit className="h-4 w-4 mr-2" /> Редактировать
-                </Link>
-              </Button>
-            )}
-            <Button variant="outline" size="icon">
-              <Share className="h-4 w-4" />
-            </Button>
-            <FavoriteButton
-              studioId={studio.id}
-              initialIsFavorite={isFavorite}
-            />
-          </div>
-        </div>
+        </section>
 
         {/* Gallery с лайтбоксом */}
-        <StudioGallery images={studio.images} studioName={studio.name} />
+        <div className="container mx-auto px-4 -mt-4 relative z-10">
+          <StudioGallery images={studio.images} studioName={studio.name} />
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
-            <section>
-              <h2 className="text-2xl font-bold mb-4">О студии</h2>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
-                {studio.description || "Описание отсутствует."}
-              </p>
-            </section>
-
-            {studio.lat && studio.lng && (
-              <section>
-                <h2 className="text-2xl font-bold mb-4">Расположение</h2>
-                <SearchMap studios={[studio]} />
-              </section>
-            )}
-
-            <section>
-              <h2 className="text-2xl font-bold mb-4">
-                Залы ({studio.rooms.length})
-              </h2>
-              {studio.rooms.length > 0 ? (
-                <div className="space-y-4">
-                  {studio.rooms.map((room) => (
-                    <div
-                      key={room.id}
-                      className="border rounded-lg p-4 flex gap-4"
-                    >
-                      <div className="w-32 h-24 bg-gray-100 rounded-md flex-shrink-0 relative overflow-hidden">
-                        {room.images[0] ? (
-                          <Image
-                            src={room.images[0]}
-                            alt={room.name}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-200" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-bold text-lg">{room.name}</h3>
-                        <p className="text-sm text-gray-500">
-                          {room.area} м² • {Number(room.pricePerHour)} ₽/час
-                        </p>
-                        {room.hasNaturalLight && (
-                          <span className="inline-block mt-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                            Естественный свет
-                          </span>
-                        )}
-                      </div>
-                      <div className="ml-auto self-center flex flex-col gap-2">
-                        {isOwner && (
-                          <Button variant="outline" size="sm" asChild>
-                            <Link
-                              href={`/studios/${studio.id}/rooms/${room.id}/edit`}
-                            >
-                              <Edit className="h-3 w-3 mr-1" /> Ред.
-                            </Link>
-                          </Button>
-                        )}
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button>Забронировать</Button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                              <DialogTitle>
-                                Бронирование: {room.name}
-                              </DialogTitle>
-                              <DialogDescription>
-                                Выберите дату и время для бронирования.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <BookingForm
-                              roomId={room.id}
-                              pricePerHour={Number(room.pricePerHour)}
-                            />
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-gray-500">
-                  В этой студии пока нет добавленных залов.
+        <div className="container mx-auto px-4 py-10">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* About Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />О студии
+                </h2>
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                  {studio.description || "Описание отсутствует."}
                 </p>
-              )}
-            </section>
+              </section>
 
-            <section>
-              <h2 className="text-2xl font-bold mb-4">Отзывы</h2>
-
-              {user && !isOwner && (
-                <div className="mb-8">
-                  <AddReviewForm studioId={studio.id} />
-                </div>
-              )}
-
-              {!user && (
-                <div className="mb-8 p-4 bg-gray-50 rounded-lg text-sm text-gray-500">
-                  <Link
-                    href="/sign-in"
-                    className="text-primary hover:underline"
-                  >
-                    Войдите
-                  </Link>
-                  , чтобы оставить отзыв.
-                </div>
+              {/* Map Section */}
+              {studio.lat && studio.lng && (
+                <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-purple-600" />
+                    Расположение
+                  </h2>
+                  <SearchMap studios={[studio]} />
+                </section>
               )}
 
-              <div className="space-y-6">
-                {studio.reviews.length > 0 ? (
-                  studio.reviews.map((review) => (
-                    <div
-                      key={review.id}
-                      className="border-b pb-6 last:border-0"
-                    >
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                            {review.user.image ? (
-                              <Image
-                                src={review.user.image}
-                                alt={review.user.name || "User"}
-                                width={32}
-                                height={32}
-                              />
-                            ) : (
-                              <span className="text-xs font-bold text-gray-500">
-                                {(review.user.name ||
-                                  review.user.email ||
-                                  "U")[0].toUpperCase()}
+              {/* Rooms Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  <Camera className="w-5 h-5 text-purple-600" />
+                  Залы ({studio.rooms.length})
+                </h2>
+                {studio.rooms.length > 0 ? (
+                  <div className="space-y-4">
+                    {studio.rooms.map((room) => (
+                      <div
+                        key={room.id}
+                        className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex flex-col md:flex-row gap-4 hover:shadow-md transition-shadow"
+                      >
+                        <div className="w-full md:w-40 h-32 bg-slate-100 dark:bg-slate-700 rounded-lg flex-shrink-0 relative overflow-hidden">
+                          {room.images[0] ? (
+                            <Image
+                              src={room.images[0]}
+                              alt={room.name}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-400">
+                              <Camera className="w-8 h-8" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg mb-2">
+                            {room.name}
+                          </h3>
+                          <div className="flex flex-wrap gap-3 text-sm text-slate-600 dark:text-slate-400 mb-3">
+                            <span className="flex items-center gap-1">
+                              <Building2 className="w-4 h-4" />
+                              {room.area} м²
+                            </span>
+                            <span className="flex items-center gap-1 font-semibold text-purple-600">
+                              {Number(room.pricePerHour).toLocaleString()} ₽/час
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {room.hasNaturalLight && (
+                              <span className="inline-flex items-center gap-1 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-2.5 py-1 rounded-full">
+                                <Sun className="w-3 h-3" />
+                                Естественный свет
                               </span>
                             )}
                           </div>
-                          <div>
-                            <p className="font-medium text-sm">
-                              {review.user.name || "Пользователь"}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {format(review.createdAt, "d MMMM yyyy", {
-                                locale: ru,
-                              })}
-                            </p>
-                          </div>
                         </div>
-                        <div className="flex">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={`h-4 w-4 ${
-                                star <= review.rating
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-gray-300"
-                              }`}
-                            />
-                          ))}
+                        <div className="flex flex-col gap-2 md:self-center">
+                          {isOwner && (
+                            <Button variant="outline" size="sm" asChild>
+                              <Link
+                                href={`/studios/${studio.id}/rooms/${room.id}/edit`}
+                              >
+                                <Edit className="h-3 w-3 mr-1" /> Ред.
+                              </Link>
+                            </Button>
+                          )}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button className="bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700">
+                                Забронировать
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                              <DialogHeader>
+                                <DialogTitle>
+                                  Бронирование: {room.name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Выберите дату и время для бронирования.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <BookingForm
+                                roomId={room.id}
+                                pricePerHour={Number(room.pricePerHour)}
+                              />
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </div>
-                      {review.comment && (
-                        <p className="text-gray-600 text-sm mt-2">
-                          {review.comment}
-                        </p>
-                      )}
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 ) : (
-                  <p className="text-gray-500">
-                    Отзывов пока нет. Будьте первым!
-                  </p>
+                  <div className="text-center py-8 text-slate-500">
+                    <Camera className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                    <p>В этой студии пока нет добавленных залов.</p>
+                  </div>
                 )}
-              </div>
-            </section>
-          </div>
+              </section>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <div className="border rounded-xl p-6 shadow-sm sticky top-24">
-              <h3 className="font-bold text-lg mb-4">Контакты</h3>
-              <div className="space-y-3 text-sm">
-                {studio.phone && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Телефон</span>
-                    <span className="font-medium">{studio.phone}</span>
+              {/* Reviews Section */}
+              <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6">
+                <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-purple-600" />
+                  Отзывы ({studio.reviews.length})
+                </h2>
+
+                {user && !isOwner && (
+                  <div className="mb-8 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+                    <AddReviewForm studioId={studio.id} />
                   </div>
                 )}
-                {studio.email && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Email</span>
-                    <span className="font-medium">{studio.email}</span>
+
+                {!user && (
+                  <div className="mb-8 p-4 bg-slate-100 dark:bg-slate-700 rounded-xl text-sm text-slate-600 dark:text-slate-300 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    <Link
+                      href="/sign-in"
+                      className="text-purple-600 hover:underline font-medium"
+                    >
+                      Войдите
+                    </Link>
+                    , чтобы оставить отзыв.
                   </div>
                 )}
-                <div className="pt-4 border-t">
-                  {!isOwner && user ? (
-                    <ContactOwnerButton
-                      ownerId={studio.owner.id}
-                      studioName={studio.name}
-                    />
-                  ) : !user ? (
-                    <Button className="w-full" size="lg" asChild>
-                      <Link href="/sign-in">Войти, чтобы написать</Link>
-                    </Button>
-                  ) : null}
+
+                <div className="space-y-6">
+                  {studio.reviews.length > 0 ? (
+                    studio.reviews.map((review) => (
+                      <div
+                        key={review.id}
+                        className="border-b border-slate-100 dark:border-slate-700 pb-6 last:border-0"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center overflow-hidden">
+                              {review.user.image ? (
+                                <Image
+                                  src={review.user.image}
+                                  alt={review.user.name || "User"}
+                                  width={40}
+                                  height={40}
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <span className="text-sm font-bold text-white">
+                                  {(review.user.name ||
+                                    review.user.email ||
+                                    "U")[0].toUpperCase()}
+                                </span>
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium">
+                                {review.user.name || "Пользователь"}
+                              </p>
+                              <p className="text-xs text-slate-500">
+                                {format(review.createdAt, "d MMMM yyyy", {
+                                  locale: ru,
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-4 w-4 ${
+                                  star <= review.rating
+                                    ? "fill-yellow-400 text-yellow-400"
+                                    : "text-slate-200 dark:text-slate-600"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {review.comment && (
+                          <p className="text-slate-600 dark:text-slate-300 text-sm pl-13">
+                            {review.comment}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-slate-500">
+                      <Star className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                      <p>Отзывов пока нет. Будьте первым!</p>
+                    </div>
+                  )}
                 </div>
+              </section>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              {/* Contact Card */}
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-6 sticky top-24">
+                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                  <Phone className="w-5 h-5 text-purple-600" />
+                  Контакты
+                </h3>
+                <div className="space-y-4">
+                  {studio.phone && (
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                      <Phone className="w-4 h-4 text-slate-500" />
+                      <div>
+                        <p className="text-xs text-slate-500">Телефон</p>
+                        <p className="font-medium">{studio.phone}</p>
+                      </div>
+                    </div>
+                  )}
+                  {studio.email && (
+                    <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
+                      <Mail className="w-4 h-4 text-slate-500" />
+                      <div>
+                        <p className="text-xs text-slate-500">Email</p>
+                        <p className="font-medium">{studio.email}</p>
+                      </div>
+                    </div>
+                  )}
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+                    {!isOwner && user ? (
+                      <ContactOwnerButton
+                        ownerId={studio.owner.id}
+                        studioName={studio.name}
+                      />
+                    ) : !user ? (
+                      <Button
+                        className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700"
+                        size="lg"
+                        asChild
+                      >
+                        <Link href="/sign-in">
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Войти, чтобы написать
+                        </Link>
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Info */}
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-2xl p-6 border border-purple-100 dark:border-purple-800">
+                <h3 className="font-bold mb-3 text-purple-700 dark:text-purple-300">
+                  Быстрая информация
+                </h3>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                    <Clock className="w-4 h-4 text-purple-500" />
+                    Мгновенное бронирование
+                  </li>
+                  <li className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                    <Building2 className="w-4 h-4 text-purple-500" />
+                    {studio.rooms.length} залов для аренды
+                  </li>
+                  {studio.rooms.length > 0 && (
+                    <li className="flex items-center gap-2 text-slate-600 dark:text-slate-300">
+                      <Sparkles className="w-4 h-4 text-purple-500" />
+                      от{" "}
+                      {Math.min(
+                        ...studio.rooms.map((r) => Number(r.pricePerHour))
+                      ).toLocaleString()}{" "}
+                      ₽/час
+                    </li>
+                  )}
+                </ul>
               </div>
             </div>
           </div>
