@@ -6,12 +6,7 @@ import { Menu, X, Shield } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignOutButton,
-} from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignOutButton } from "@clerk/nextjs";
 
 interface MobileNavProps {
   isAdmin: boolean;
@@ -82,11 +77,11 @@ export function MobileNav({ isAdmin }: MobileNavProps) {
               </div>
             </SignedIn>
             <SignedOut>
-              <SignInButton mode="modal">
+              <Link href="/sign-in" className="w-full">
                 <Button variant="outline" className="w-full">
                   Войти
                 </Button>
-              </SignInButton>
+              </Link>
               <Link href="/sign-up" className="w-full">
                 <Button className="w-full">Регистрация</Button>
               </Link>

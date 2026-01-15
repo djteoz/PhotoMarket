@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { YandexMetrika } from "@/components/analytics/yandex-metrika";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 import { Suspense } from "react";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -17,7 +18,8 @@ const inter = Inter({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://www.photomarket.tech";
+const baseUrl =
+  process.env.NEXT_PUBLIC_APP_URL || "https://www.photomarket.tech";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -25,7 +27,8 @@ export const metadata: Metadata = {
     default: "PhotoMarket — агрегатор фотостудий России",
     template: "%s | PhotoMarket",
   },
-  description: "Найдите и забронируйте идеальную фотостудию для съёмки в Москве, Санкт-Петербурге и других городах России. Сравнивайте цены, читайте отзывы, бронируйте онлайн.",
+  description:
+    "Найдите и забронируйте идеальную фотостудию для съёмки в Москве, Санкт-Петербурге и других городах России. Сравнивайте цены, читайте отзывы, бронируйте онлайн.",
   keywords: [
     "фотостудия",
     "аренда фотостудии",
@@ -35,7 +38,7 @@ export const metadata: Metadata = {
     "съёмка в студии",
     "фотосессия",
     "циклорама",
-    "фотозал"
+    "фотозал",
   ],
   authors: [{ name: "PhotoMarket" }],
   creator: "PhotoMarket",
@@ -60,13 +63,16 @@ export const metadata: Metadata = {
     url: baseUrl,
     siteName: "PhotoMarket",
     title: "PhotoMarket — агрегатор фотостудий России",
-    description: "Найдите и забронируйте идеальную фотостудию для съёмки. Сравнивайте цены, читайте отзывы, бронируйте онлайн.",
-    images: [{
-      url: "/og-image.jpg",
-      width: 1200,
-      height: 630,
-      alt: "PhotoMarket — агрегатор фотостудий",
-    }],
+    description:
+      "Найдите и забронируйте идеальную фотостудию для съёмки. Сравнивайте цены, читайте отзывы, бронируйте онлайн.",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "PhotoMarket — агрегатор фотостудий",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -114,6 +120,7 @@ export default function RootLayout({
         >
           <Suspense fallback={null}>
             <YandexMetrika />
+            <GoogleAnalytics />
           </Suspense>
           <Header />
           <main className="flex-1">{children}</main>

@@ -82,7 +82,7 @@ async function main() {
   console.log("🚀 Starting real studios import...\n");
 
   const systemUser = await getOrCreateSystemUser();
-  
+
   let imported = 0;
   let skipped = 0;
 
