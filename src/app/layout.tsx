@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import { PWAInstallPrompt } from "@/components/pwa/pwa-install-prompt";
 import { OrganizationJsonLd } from "@/components/seo/json-ld";
+import { CookieConsent } from "@/components/cookie-consent";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -126,6 +127,7 @@ export default function RootLayout({
           <main className="flex-1">{children}</main>
           <Footer />
           <Toaster />
+          <CookieConsent />
           <ServiceWorkerRegister />
           <PWAInstallPrompt />
         </body>
