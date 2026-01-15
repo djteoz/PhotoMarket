@@ -9,7 +9,8 @@ import Image from "next/image";
 // Цвета для категорий
 const categoryColors: Record<string, string> = {
   "общее-обсуждение": "bg-blue-100 text-blue-700 hover:bg-blue-200",
-  "поиск-ассистентов-и-моделей": "bg-green-100 text-green-700 hover:bg-green-200",
+  "поиск-ассистентов-и-моделей":
+    "bg-green-100 text-green-700 hover:bg-green-200",
   "техника-и-оборудование": "bg-orange-100 text-orange-700 hover:bg-orange-200",
   "отзывы-о-студиях": "bg-yellow-100 text-yellow-700 hover:bg-yellow-200",
   барахолка: "bg-purple-100 text-purple-700 hover:bg-purple-200",

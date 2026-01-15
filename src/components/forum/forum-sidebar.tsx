@@ -88,8 +88,11 @@ export async function ForumSidebar({ activeCategory }: ForumSidebarProps) {
 
           {categories.map((cat) => {
             const isActive = activeCategory === cat.slug;
-            const icon = categoryIcons[cat.slug] || <Hash className="w-4 h-4" />;
-            const colorClass = categoryColors[cat.slug] || "text-slate-600 bg-slate-100";
+            const icon = categoryIcons[cat.slug] || (
+              <Hash className="w-4 h-4" />
+            );
+            const colorClass =
+              categoryColors[cat.slug] || "text-slate-600 bg-slate-100";
 
             return (
               <Link
