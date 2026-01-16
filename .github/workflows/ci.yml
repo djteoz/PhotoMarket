@@ -32,11 +32,12 @@ jobs:
 
       - name: Run ESLint
         run: npm run lint
-        continue-on-error: true  # Warnings are OK
+        continue-on-error: true # Warnings are OK
 
       - name: TypeScript Check
         run: npx tsc --noEmit
-        continue-on-error: true  # Allow some type errors (ignoreBuildErrors is set)
+        continue-on-error: true # Allow some type errors (ignoreBuildErrors is set)
+
 
   # ============================================
   # Note: Build is handled by Vercel with proper env vars

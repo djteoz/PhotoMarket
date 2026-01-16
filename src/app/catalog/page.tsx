@@ -18,6 +18,11 @@ import { FavoriteButton } from "@/components/studios/favorite-button";
 import { cn } from "@/lib/utils";
 import { Metadata } from "next";
 import { getCitySlug } from "@/lib/cities";
+import {
+  getCachedStudios,
+  getCachedCities,
+  getCachedRoomsCount,
+} from "@/app/actions/cached-queries";
 
 export const metadata: Metadata = {
   title: "Каталог фотостудий",
@@ -33,46 +38,15 @@ export default async function CatalogPage({
   const user = await currentUser();
   const { city, minPrice, maxPrice } = await searchParams;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const where: any = {};
-
-  if (city && typeof city === "string") {
-    where.city = { contains: city, mode: "insensitive" };
-  }
-
-  if (minPrice || maxPrice) {
-    where.rooms = {
-      some: {
-        pricePerHour: {
-          gte: minPrice ? Number(minPrice) : undefined,
-          lte: maxPrice ? Number(maxPrice) : undefined,
-        },
-      },
-    };
-  }
-
+  // Use cached queries for better performance
   const [studios, cities, totalRooms] = await Promise.all([
-    prisma.studio.findMany({
-      where,
-      include: {
-        rooms: true,
-        reviews: true,
-        owner: {
-          select: {
-            subscriptionPlan: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+    getCachedStudios({
+      city: typeof city === "string" ? city : undefined,
+      minPrice: minPrice ? Number(minPrice) : undefined,
+      maxPrice: maxPrice ? Number(maxPrice) : undefined,
     }),
-    prisma.studio.groupBy({
-      by: ["city"],
-      _count: { city: true },
-      orderBy: { _count: { city: "desc" } },
-    }),
-    prisma.room.count(),
+    getCachedCities(),
+    getCachedRoomsCount(),
   ]);
 
   // Sort: Premium first

@@ -1,8 +1,55 @@
 /**
  * Rate Limiter для API защиты
- * Использует in-memory хранилище (для продакшена рекомендуется Redis)
+ * Использует Upstash Redis если настроен, иначе in-memory
  */
 
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+
+// Check if Redis is configured
+const isRedisConfigured =
+  process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN;
+
+// Initialize Redis client if configured
+const redis = isRedisConfigured
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
+  : null;
+
+// ============================================
+// Upstash Rate Limiters (production)
+// ============================================
+const createUpstashLimiter = (
+  requests: number,
+  window: string,
+  prefix: string
+) => {
+  if (!redis) return null;
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(requests, window as Parameters<typeof Ratelimit.slidingWindow>[1]),
+    analytics: true,
+    prefix: `ratelimit:${prefix}`,
+  });
+};
+
+// Upstash limiters
+const upstashLimiters = {
+  api: createUpstashLimiter(100, "1 m", "api"),
+  auth: createUpstashLimiter(10, "1 m", "auth"),
+  search: createUpstashLimiter(60, "1 m", "search"),
+  booking: createUpstashLimiter(20, "1 m", "booking"),
+  message: createUpstashLimiter(30, "1 m", "message"),
+  contact: createUpstashLimiter(5, "5 m", "contact"),
+  ai: createUpstashLimiter(10, "1 m", "ai"),
+  upload: createUpstashLimiter(20, "5 m", "upload"),
+};
+
+// ============================================
+// In-memory fallback (development)
+// ============================================
 interface RateLimitEntry {
   count: number;
   resetTime: number;
@@ -99,3 +146,50 @@ export const RATE_LIMITS = {
 } as const;
 
 export type RateLimitType = keyof typeof RATE_LIMITS;
+
+/**
+ * Check rate limit - uses Redis if available, otherwise in-memory
+ */
+export async function checkRateLimit(
+  type: RateLimitType,
+  identifier: string
+): Promise<{ limited: boolean; remaining: number; resetIn: number }> {
+  const upstashLimiter = upstashLimiters[type];
+
+  // Use Upstash if available
+  if (upstashLimiter) {
+    try {
+      const { success, remaining, reset } = await upstashLimiter.limit(identifier);
+      return {
+        limited: !success,
+        remaining,
+        resetIn: Math.max(0, reset - Date.now()),
+      };
+    } catch (error) {
+      console.error("Upstash rate limit error, falling back to in-memory:", error);
+    }
+  }
+
+  // Fallback to in-memory
+  const config = RATE_LIMITS[type];
+  return rateLimiter.isRateLimited(identifier, config.limit, config.windowMs);
+}
+
+/**
+ * Get client identifier for rate limiting
+ */
+export function getClientIdentifier(
+  request: Request,
+  userId?: string | null
+): string {
+  if (userId) {
+    return `user:${userId}`;
+  }
+
+  const forwarded = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  const cfIp = request.headers.get("cf-connecting-ip");
+
+  const ip = cfIp || realIp || forwarded?.split(",")[0] || "unknown";
+  return `ip:${ip}`;
+}
