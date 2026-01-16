@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  getCitySlug,
-  getCityName,
-  getCityPrepositional,
-} from "@/lib/cities";
+import { getCitySlug, getCityName, getCityPrepositional } from "@/lib/cities";
 
 describe("City Utilities", () => {
   describe("getCitySlug", () => {

@@ -42,10 +42,9 @@ export default withSentryConfig(nextConfig, {
   disableLogger: true,
 
   // Hides source maps from generated client bundles
-  hideSourceMaps: true,
-
-  // Transpile SDK to be compatible with IE11
-  transpileClientSDK: false,
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
 
   // Tunnel sentry requests to avoid ad-blockers
   tunnelRoute: "/monitoring-tunnel",

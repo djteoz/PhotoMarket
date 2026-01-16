@@ -80,6 +80,8 @@ export function ChatWindow({
         subscriptionEndsAt: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        isBanned: false,
+        banReason: null,
       },
     };
 

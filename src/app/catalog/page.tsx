@@ -52,10 +52,10 @@ export default async function CatalogPage({
   // Sort: Premium first
   studios.sort((a, b) => {
     const isAPremium =
-      a.owner?.subscriptionPlan === "PREMIUM" ||
+      a.owner?.subscriptionPlan === "BUSINESS" ||
       a.owner?.subscriptionPlan === "PRO";
     const isBPremium =
-      b.owner?.subscriptionPlan === "PREMIUM" ||
+      b.owner?.subscriptionPlan === "BUSINESS" ||
       b.owner?.subscriptionPlan === "PRO";
     if (isAPremium && !isBPremium) return -1;
     if (!isAPremium && isBPremium) return 1;
@@ -167,7 +167,7 @@ export default async function CatalogPage({
 
                   const isFavorite = favoriteIds.includes(studio.id);
                   const isPremium =
-                    studio.owner?.subscriptionPlan === "PREMIUM" ||
+                    studio.owner?.subscriptionPlan === "BUSINESS" ||
                     studio.owner?.subscriptionPlan === "PRO";
                   const rating = getAverageRating(studio.reviews);
 

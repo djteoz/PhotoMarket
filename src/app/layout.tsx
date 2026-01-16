@@ -12,6 +12,7 @@ import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register"
 import { PWAInstallPrompt } from "@/components/pwa/pwa-install-prompt";
 import { OrganizationJsonLd } from "@/components/seo/json-ld";
 import { CookieConsent } from "@/components/cookie-consent";
+import { TRPCProvider } from "@/components/providers/trpc-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -119,17 +120,19 @@ export default function RootLayout({
         <body
           className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}
         >
-          <Suspense fallback={null}>
-            <YandexMetrika />
-            <GoogleAnalytics />
-          </Suspense>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <Toaster />
-          <CookieConsent />
-          <ServiceWorkerRegister />
-          <PWAInstallPrompt />
+          <TRPCProvider>
+            <Suspense fallback={null}>
+              <YandexMetrika />
+              <GoogleAnalytics />
+            </Suspense>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <Toaster />
+            <CookieConsent />
+            <ServiceWorkerRegister />
+            <PWAInstallPrompt />
+          </TRPCProvider>
         </body>
       </html>
     </ClerkProvider>

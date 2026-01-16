@@ -116,7 +116,7 @@ export default async function CityPage({ params }: CityPageProps) {
       : null;
 
   const minPrice = Math.min(
-    ...studios.flatMap((s) => s.rooms.map((r) => r.pricePerHour))
+    ...studios.flatMap((s) => s.rooms.map((r) => Number(r.pricePerHour)))
   );
 
   // Вычисление рейтинга студии (null если нет отзывов)
@@ -126,9 +126,9 @@ export default async function CityPage({ params }: CityPageProps) {
     return Math.round(avg * 10) / 10;
   };
 
-  const getMinPrice = (rooms: { pricePerHour: number }[]) => {
+  const getMinPrice = (rooms: { pricePerHour: number | { toNumber: () => number } }[]) => {
     if (rooms.length === 0) return 0;
-    return Math.min(...rooms.map((r) => r.pricePerHour));
+    return Math.min(...rooms.map((r) => typeof r.pricePerHour === "number" ? r.pricePerHour : Number(r.pricePerHour)));
   };
 
   const baseUrl = "https://www.photomarket.tech";
