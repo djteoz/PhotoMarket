@@ -17,15 +17,20 @@ import {
 } from "lucide-react";
 import { BreadcrumbJsonLd, StudiosListJsonLd } from "@/components/seo/json-ld";
 
+// Force dynamic rendering - no static generation at build time
+export const dynamic = "force-dynamic";
+
 interface CityPageProps {
   params: Promise<{ slug: string }>;
 }
 
-// Генерация статических параметров для всех городов
+// Skip static generation at build time (would require DB connection)
+// Pages will be generated on-demand at runtime
 export async function generateStaticParams() {
-  const cities = await prisma.studio.groupBy({
-    by: ["city"],
-  });
+  // Return empty array to skip build-time generation
+  // Cities will be rendered dynamically on first request
+  return [];
+}
 
   return cities.map((city) => ({
     slug: getCitySlug(city.city),
