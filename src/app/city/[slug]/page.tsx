@@ -32,11 +32,6 @@ export async function generateStaticParams() {
   return [];
 }
 
-  return cities.map((city) => ({
-    slug: getCitySlug(city.city),
-  }));
-}
-
 // Генерация метаданных
 export async function generateMetadata({
   params,
