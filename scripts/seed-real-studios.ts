@@ -7,7 +7,7 @@
  * Или: node --loader ts-node/esm scripts/seed-real-studios.ts
  */
 
-const { PrismaClient } = require("@prisma/client");
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
