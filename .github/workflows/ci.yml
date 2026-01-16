@@ -38,8 +38,10 @@ jobs:
         run: npx tsc --noEmit
         continue-on-error: true # Allow some type errors (ignoreBuildErrors is set)
 
+      - name: Run Unit Tests
+        run: npm run test:run
 
   # ============================================
   # Note: Build is handled by Vercel with proper env vars
-  # CI only validates code quality (lint + types)
+  # CI only validates code quality (lint + types + unit tests)
   # ============================================

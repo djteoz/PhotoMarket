@@ -29,7 +29,10 @@ const createUpstashLimiter = (
   if (!redis) return null;
   return new Ratelimit({
     redis,
-    limiter: Ratelimit.slidingWindow(requests, window as Parameters<typeof Ratelimit.slidingWindow>[1]),
+    limiter: Ratelimit.slidingWindow(
+      requests,
+      window as Parameters<typeof Ratelimit.slidingWindow>[1]
+    ),
     analytics: true,
     prefix: `ratelimit:${prefix}`,
   });
@@ -159,14 +162,19 @@ export async function checkRateLimit(
   // Use Upstash if available
   if (upstashLimiter) {
     try {
-      const { success, remaining, reset } = await upstashLimiter.limit(identifier);
+      const { success, remaining, reset } = await upstashLimiter.limit(
+        identifier
+      );
       return {
         limited: !success,
         remaining,
         resetIn: Math.max(0, reset - Date.now()),
       };
     } catch (error) {
-      console.error("Upstash rate limit error, falling back to in-memory:", error);
+      console.error(
+        "Upstash rate limit error, falling back to in-memory:",
+        error
+      );
     }
   }
 
