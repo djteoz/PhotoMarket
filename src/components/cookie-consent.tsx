@@ -47,14 +47,16 @@ export function CookieConsent() {
                   Мы используем cookies
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Для улучшения работы сайта и персонализации контента мы используем файлы cookie. 
-                  Продолжая использовать сайт, вы соглашаетесь с{" "}
-                  <Link 
-                    href="/legal/privacy" 
+                  Для улучшения работы сайта и персонализации контента мы
+                  используем файлы cookie. Продолжая использовать сайт, вы
+                  соглашаетесь с{" "}
+                  <Link
+                    href="/legal/privacy"
                     className="text-purple-600 hover:underline"
                   >
                     политикой конфиденциальности
-                  </Link>.
+                  </Link>
+                  .
                 </p>
               </div>
             </div>

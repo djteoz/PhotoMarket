@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   typescript: {
@@ -26,4 +27,31 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  // Sentry organization and project
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Suppress source map upload logs
+  silent: !process.env.CI,
+
+  // Upload source maps for better error debugging
+  widenClientFileUpload: true,
+
+  // Automatically tree-shake Sentry logger statements
+  disableLogger: true,
+
+  // Hides source maps from generated client bundles
+  hideSourceMaps: true,
+
+  // Transpile SDK to be compatible with IE11
+  transpileClientSDK: false,
+
+  // Tunnel sentry requests to avoid ad-blockers
+  tunnelRoute: "/monitoring-tunnel",
+
+  // Automatically instrument React components
+  reactComponentAnnotation: {
+    enabled: true,
+  },
+});
