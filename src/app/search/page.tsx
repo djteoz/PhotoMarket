@@ -247,7 +247,7 @@ export default async function SearchPage({
                   const minStudioPrice =
                     studio.rooms.length > 0
                       ? Math.min(
-                          ...studio.rooms.map((r) => Number(r.pricePerHour))
+                          ...studio.rooms.map((r) => Number(r.pricePerHour)),
                         )
                       : null;
 
@@ -291,8 +291,8 @@ export default async function SearchPage({
                               {studio.rooms.length === 1
                                 ? ""
                                 : studio.rooms.length < 5
-                                ? "а"
-                                : "ов"}
+                                  ? "а"
+                                  : "ов"}
                             </div>
                           </div>
                         </div>

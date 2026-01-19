@@ -107,7 +107,7 @@ export default async function CatalogPage({
                   "px-3 py-1.5 rounded-full text-sm transition-colors",
                   city === c.city
                     ? "bg-white text-slate-900"
-                    : "bg-white/10 hover:bg-white/20"
+                    : "bg-white/10 hover:bg-white/20",
                 )}
               >
                 {c.city} ({c._count.city})
@@ -165,7 +165,7 @@ export default async function CatalogPage({
                   const minStudioPrice =
                     studio.rooms.length > 0
                       ? Math.min(
-                          ...studio.rooms.map((r) => Number(r.pricePerHour))
+                          ...studio.rooms.map((r) => Number(r.pricePerHour)),
                         )
                       : null;
 
@@ -184,7 +184,7 @@ export default async function CatalogPage({
                       <Card
                         className={cn(
                           "overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col border-0 shadow-md",
-                          isPremium && "ring-2 ring-amber-400 bg-amber-50/30"
+                          isPremium && "ring-2 ring-amber-400 bg-amber-50/30",
                         )}
                       >
                         <div className="relative h-52 bg-slate-100">
@@ -258,8 +258,8 @@ export default async function CatalogPage({
                             {studio.rooms.length === 1
                               ? "зал"
                               : studio.rooms.length < 5
-                              ? "зала"
-                              : "залов"}
+                                ? "зала"
+                                : "залов"}
                           </div>
                           {minStudioPrice !== null && (
                             <div className="font-semibold text-slate-900">

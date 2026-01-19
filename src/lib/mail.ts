@@ -1,6 +1,10 @@
 import { Resend } from "resend";
+import { BookingConfirmationEmail } from "@/emails/booking-confirmation";
+import { NewBookingOwnerEmail } from "@/emails/new-booking-owner";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const FROM_EMAIL = process.env.FROM_EMAIL || "PhotoMarket <noreply@photomarket.tech>";
 
 export async function sendBookingNotification({
   to,
@@ -9,6 +13,10 @@ export async function sendBookingNotification({
   roomName,
   date,
   time,
+  duration = "1 час",
+  totalPrice = "",
+  studioAddress = "",
+  bookingId = "",
 }: {
   to: string;
   userName: string;
@@ -16,6 +24,10 @@ export async function sendBookingNotification({
   roomName: string;
   date: string;
   time: string;
+  duration?: string;
+  totalPrice?: string;
+  studioAddress?: string;
+  bookingId?: string;
 }) {
   if (!process.env.RESEND_API_KEY) {
     console.log("📧 Mock Email to", to, ": Booking Confirmed", {
@@ -29,19 +41,22 @@ export async function sendBookingNotification({
 
   try {
     await resend.emails.send({
-      from: "PhotoMarket <onboarding@resend.dev>",
+      from: FROM_EMAIL,
       to,
       subject: `Бронирование подтверждено: ${studioName}`,
-      html: `
-        <h1>Бронирование подтверждено!</h1>
-        <p>Здравствуйте, ${userName}!</p>
-        <p>Вы успешно забронировали зал <strong>${roomName}</strong> в студии <strong>${studioName}</strong>.</p>
-        <p><strong>Дата:</strong> ${date}</p>
-        <p><strong>Время:</strong> ${time}</p>
-        <br/>
-        <p>С уважением,<br/>Команда PhotoMarket</p>
-      `,
+      react: BookingConfirmationEmail({
+        userName,
+        studioName,
+        roomName,
+        date,
+        time,
+        duration,
+        totalPrice,
+        studioAddress,
+        bookingId,
+      }),
     });
+    console.log("📧 Email sent to", to);
   } catch (error) {
     console.error("Failed to send email:", error);
   }
@@ -54,6 +69,11 @@ export async function sendNewBookingNotificationToOwner({
   roomName,
   date,
   time,
+  customerName = "",
+  customerEmail = "",
+  duration = "1 час",
+  totalPrice = "",
+  bookingId = "",
 }: {
   to: string;
   ownerName: string;
@@ -61,6 +81,11 @@ export async function sendNewBookingNotificationToOwner({
   roomName: string;
   date: string;
   time: string;
+  customerName?: string;
+  customerEmail?: string;
+  duration?: string;
+  totalPrice?: string;
+  bookingId?: string;
 }) {
   if (!process.env.RESEND_API_KEY) {
     console.log("📧 Mock Email to Owner", to, ": New Booking", {
@@ -74,19 +99,23 @@ export async function sendNewBookingNotificationToOwner({
 
   try {
     await resend.emails.send({
-      from: "PhotoMarket <onboarding@resend.dev>",
+      from: FROM_EMAIL,
       to,
       subject: `Новое бронирование: ${studioName}`,
-      html: `
-        <h1>Новое бронирование!</h1>
-        <p>Здравствуйте, ${ownerName}!</p>
-        <p>В вашей студии <strong>${studioName}</strong> (зал ${roomName}) появилось новое бронирование.</p>
-        <p><strong>Дата:</strong> ${date}</p>
-        <p><strong>Время:</strong> ${time}</p>
-        <br/>
-        <p>Проверьте личный кабинет для подтверждения.</p>
-      `,
+      react: NewBookingOwnerEmail({
+        ownerName,
+        customerName,
+        customerEmail,
+        studioName,
+        roomName,
+        date,
+        time,
+        duration,
+        totalPrice,
+        bookingId,
+      }),
     });
+    console.log("📧 Email sent to owner", to);
   } catch (error) {
     console.error("Failed to send email:", error);
   }
