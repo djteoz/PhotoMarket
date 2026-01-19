@@ -18,7 +18,7 @@ export const studioRouter = router({
           limit: z.number().min(1).max(100).default(12),
           cursor: z.string().optional(), // for pagination
         })
-        .default({})
+        .default({}),
     )
     .query(async ({ ctx, input }) => {
       // Skip cache for cursor-based queries (infinite scroll)
@@ -148,7 +148,7 @@ export const studioRouter = router({
 
           return studio;
         },
-        TTL.MEDIUM
+        TTL.MEDIUM,
       );
     }),
 
@@ -165,7 +165,7 @@ export const studioRouter = router({
           orderBy: { _count: { city: "desc" } },
         });
       },
-      TTL.LONG
+      TTL.LONG,
     );
   }),
 

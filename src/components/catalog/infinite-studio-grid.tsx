@@ -64,7 +64,7 @@ export function InfiniteStudioGrid({
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
-      }
+      },
     );
 
   // Use custom infinite scroll hook
@@ -86,12 +86,18 @@ export function InfiniteStudioGrid({
   };
 
   // Get min price from rooms (pricePerHour is Prisma Decimal)
-  const getMinPrice = (rooms: { pricePerHour: { toNumber?: () => number } | number }[]) => {
+  const getMinPrice = (
+    rooms: { pricePerHour: { toNumber?: () => number } | number }[],
+  ) => {
     if (rooms.length === 0) return null;
-    return Math.min(...rooms.map((r) => {
-      const price = r.pricePerHour;
-      return typeof price === 'number' ? price : (price.toNumber?.() ?? Number(price));
-    }));
+    return Math.min(
+      ...rooms.map((r) => {
+        const price = r.pricePerHour;
+        return typeof price === "number"
+          ? price
+          : (price.toNumber?.() ?? Number(price));
+      }),
+    );
   };
 
   // Loading state
@@ -136,7 +142,7 @@ export function InfiniteStudioGrid({
               key={studio.id}
               className={cn(
                 "group overflow-hidden transition-all hover:shadow-lg",
-                isPremium && "ring-2 ring-amber-400/50"
+                isPremium && "ring-2 ring-amber-400/50",
               )}
             >
               {/* Image */}

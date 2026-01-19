@@ -14,7 +14,7 @@ interface UseInfiniteScrollOptions {
  */
 export function useInfiniteScroll(
   onLoadMore: () => void,
-  options: UseInfiniteScrollOptions = {}
+  options: UseInfiniteScrollOptions = {},
 ) {
   const { threshold = 0, rootMargin = "100px", enabled = true } = options;
   const observerRef = useRef<HTMLDivElement | null>(null);
@@ -24,12 +24,12 @@ export function useInfiniteScroll(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
       setIsIntersecting(target.isIntersecting);
-      
+
       if (target.isIntersecting && enabled) {
         onLoadMore();
       }
     },
-    [onLoadMore, enabled]
+    [onLoadMore, enabled],
   );
 
   useEffect(() => {

@@ -99,5 +99,5 @@ export default withBundleAnalyzer(
     reactComponentAnnotation: {
       enabled: true,
     },
-  })
+  }),
 );
