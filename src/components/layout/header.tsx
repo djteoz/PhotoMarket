@@ -13,6 +13,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { MobileNav } from "./mobile-nav";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export async function Header() {
   const user = await currentUser();
@@ -146,6 +147,7 @@ export async function Header() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/dashboard">Кабинет</Link>
             </Button>
+            <ThemeToggle />
             <UserButton afterSignOutUrl="/" />
           </SignedIn>
         </div>

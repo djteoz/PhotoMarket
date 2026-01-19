@@ -64,7 +64,10 @@ export function BookingListSkeleton() {
   return (
     <div className="space-y-4">
       {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 p-4 border rounded-lg bg-white">
+        <div
+          key={i}
+          className="flex items-center gap-4 p-4 border rounded-lg bg-white"
+        >
           <Skeleton className="w-12 h-12 rounded-full" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-48" />

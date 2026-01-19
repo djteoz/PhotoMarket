@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const securityHeaders = [
   {
@@ -67,30 +72,32 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
-  // Sentry organization and project
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
+export default withBundleAnalyzer(
+  withSentryConfig(nextConfig, {
+    // Sentry organization and project
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
 
-  // Suppress source map upload logs
-  silent: !process.env.CI,
+    // Suppress source map upload logs
+    silent: !process.env.CI,
 
-  // Upload source maps for better error debugging
-  widenClientFileUpload: true,
+    // Upload source maps for better error debugging
+    widenClientFileUpload: true,
 
-  // Automatically tree-shake Sentry logger statements
-  disableLogger: true,
+    // Automatically tree-shake Sentry logger statements
+    disableLogger: true,
 
-  // Hides source maps from generated client bundles
-  sourcemaps: {
-    deleteSourcemapsAfterUpload: true,
-  },
+    // Hides source maps from generated client bundles
+    sourcemaps: {
+      deleteSourcemapsAfterUpload: true,
+    },
 
-  // Tunnel sentry requests to avoid ad-blockers
-  tunnelRoute: "/monitoring-tunnel",
+    // Tunnel sentry requests to avoid ad-blockers
+    tunnelRoute: "/monitoring-tunnel",
 
-  // Automatically instrument React components
-  reactComponentAnnotation: {
-    enabled: true,
-  },
-});
+    // Automatically instrument React components
+    reactComponentAnnotation: {
+      enabled: true,
+    },
+  })
+);

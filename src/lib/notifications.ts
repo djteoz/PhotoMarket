@@ -24,12 +24,12 @@ interface BookingDetails {
 export async function sendBookingConfirmationEmails(booking: BookingDetails) {
   const date = format(booking.startTime, "d MMMM yyyy", { locale: ru });
   const time = format(booking.startTime, "HH:mm", { locale: ru });
-  
+
   // Calculate duration
   const durationMs = booking.endTime.getTime() - booking.startTime.getTime();
   const durationHours = Math.round(durationMs / (1000 * 60 * 60));
   const duration = `${durationHours} ${durationHours === 1 ? "час" : durationHours < 5 ? "часа" : "часов"}`;
-  
+
   const totalPrice = `${booking.totalPrice.toLocaleString("ru-RU")} ₽`;
 
   // Send to customer
@@ -84,7 +84,7 @@ export async function sendBookingCancellationEmail(
     roomName: string;
     date: string;
     reason?: string;
-  }
+  },
 ) {
   return sendEmail({
     to,
@@ -118,10 +118,10 @@ export async function sendNewReviewNotification(
     studioName: string;
     rating: number;
     comment: string;
-  }
+  },
 ) {
   const stars = "⭐".repeat(details.rating);
-  
+
   return sendEmail({
     to,
     subject: `Новый отзыв: ${details.studioName} — ${stars}`,

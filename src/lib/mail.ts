@@ -4,7 +4,8 @@ import { NewBookingOwnerEmail } from "@/emails/new-booking-owner";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = process.env.FROM_EMAIL || "PhotoMarket <noreply@photomarket.tech>";
+const FROM_EMAIL =
+  process.env.FROM_EMAIL || "PhotoMarket <noreply@photomarket.tech>";
 
 export async function sendBookingNotification({
   to,

@@ -8,10 +8,13 @@ export function CatalogSkeleton() {
         <div className="container mx-auto px-4">
           <Skeleton className="h-10 w-64 mb-3 bg-slate-700" />
           <Skeleton className="h-6 w-96 bg-slate-700" />
-          
+
           <div className="flex flex-wrap gap-2 mt-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-9 w-24 rounded-full bg-slate-700" />
+              <Skeleton
+                key={i}
+                className="h-9 w-24 rounded-full bg-slate-700"
+              />
             ))}
           </div>
         </div>
@@ -33,10 +36,13 @@ export function CatalogSkeleton() {
             <div className="flex items-center justify-between mb-6">
               <Skeleton className="h-5 w-48" />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="rounded-xl overflow-hidden border bg-white">
+                <div
+                  key={i}
+                  className="rounded-xl overflow-hidden border bg-white"
+                >
                   <Skeleton className="aspect-[4/3] w-full" />
                   <div className="p-4 space-y-3">
                     <Skeleton className="h-6 w-3/4" />

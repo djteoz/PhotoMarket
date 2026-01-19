@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 
 export const studioRouter = router({
   /**
-   * Get all studios with optional filters
+   * Get all studios with optional filters (infinite scroll support)
    */
   list: publicProcedure
     .input(
@@ -15,77 +15,91 @@ export const studioRouter = router({
           minPrice: z.number().optional(),
           maxPrice: z.number().optional(),
           hasNaturalLight: z.boolean().optional(),
-          limit: z.number().min(1).max(100).default(50),
+          limit: z.number().min(1).max(100).default(12),
           cursor: z.string().optional(), // for pagination
         })
         .default({})
     )
     .query(async ({ ctx, input }) => {
+      // Skip cache for cursor-based queries (infinite scroll)
+      const shouldCache = !input.cursor;
       const cacheKey = cacheKeys.studiosList(input.city);
 
-      return cache.getOrSet(
-        cacheKey,
-        async () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const where: any = {};
+      const fetchStudios = async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const where: any = {};
 
-          if (input.city) {
-            where.city = { contains: input.city, mode: "insensitive" };
-          }
+        if (input.city) {
+          where.city = { contains: input.city, mode: "insensitive" };
+        }
 
-          if (input.minPrice || input.maxPrice) {
-            where.rooms = {
-              some: {
-                pricePerHour: {
-                  gte: input.minPrice,
-                  lte: input.maxPrice,
-                },
-              },
-            };
-          }
-
-          if (input.hasNaturalLight) {
-            where.rooms = {
-              ...where.rooms,
-              some: {
-                ...where.rooms?.some,
-                hasNaturalLight: true,
-              },
-            };
-          }
-
-          const studios = await ctx.prisma.studio.findMany({
-            where,
-            include: {
-              rooms: true,
-              reviews: true,
-              owner: {
-                select: {
-                  subscriptionPlan: true,
-                },
+        if (input.minPrice || input.maxPrice) {
+          where.rooms = {
+            some: {
+              pricePerHour: {
+                gte: input.minPrice,
+                lte: input.maxPrice,
               },
             },
-            orderBy: { createdAt: "desc" },
-            take: input.limit,
-            cursor: input.cursor ? { id: input.cursor } : undefined,
-            skip: input.cursor ? 1 : 0,
-          });
+          };
+        }
 
-          // Sort: Premium first
-          studios.sort((a, b) => {
-            const aPlan = a.owner?.subscriptionPlan;
-            const bPlan = b.owner?.subscriptionPlan;
-            const isAPremium = aPlan === "BUSINESS" || aPlan === "PRO";
-            const isBPremium = bPlan === "BUSINESS" || bPlan === "PRO";
-            if (isAPremium && !isBPremium) return -1;
-            if (!isAPremium && isBPremium) return 1;
-            return 0;
-          });
+        if (input.hasNaturalLight) {
+          where.rooms = {
+            ...where.rooms,
+            some: {
+              ...where.rooms?.some,
+              hasNaturalLight: true,
+            },
+          };
+        }
 
-          return studios;
-        },
-        TTL.MEDIUM
-      );
+        const studios = await ctx.prisma.studio.findMany({
+          where,
+          include: {
+            rooms: true,
+            reviews: true,
+            owner: {
+              select: {
+                subscriptionPlan: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: input.limit + 1, // Fetch one extra to check if there are more
+          cursor: input.cursor ? { id: input.cursor } : undefined,
+          skip: input.cursor ? 1 : 0,
+        });
+
+        // Check if there are more results
+        let nextCursor: string | undefined = undefined;
+        if (studios.length > input.limit) {
+          const nextItem = studios.pop();
+          nextCursor = nextItem?.id;
+        }
+
+        // Sort: Premium first
+        studios.sort((a, b) => {
+          const aPlan = a.owner?.subscriptionPlan;
+          const bPlan = b.owner?.subscriptionPlan;
+          const isAPremium = aPlan === "BUSINESS" || aPlan === "PRO";
+          const isBPremium = bPlan === "BUSINESS" || bPlan === "PRO";
+          if (isAPremium && !isBPremium) return -1;
+          if (!isAPremium && isBPremium) return 1;
+          return 0;
+        });
+
+        return {
+          studios,
+          nextCursor,
+        };
+      };
+
+      if (shouldCache) {
+        return cache.getOrSet(cacheKey, fetchStudios, TTL.MEDIUM);
+      }
+
+      return fetchStudios();
     }),
 
   /**

@@ -52,11 +52,9 @@ export function BookingConfirmationEmail({
           {/* Main Content */}
           <Section style={content}>
             <Heading style={heading}>Бронирование подтверждено!</Heading>
-            
-            <Text style={paragraph}>
-              Здравствуйте, {userName}!
-            </Text>
-            
+
+            <Text style={paragraph}>Здравствуйте, {userName}!</Text>
+
             <Text style={paragraph}>
               Ваше бронирование успешно оформлено. Ждём вас в студии!
             </Text>
@@ -65,9 +63,9 @@ export function BookingConfirmationEmail({
             <Section style={bookingCard}>
               <Text style={bookingTitle}>{studioName}</Text>
               <Text style={bookingSubtitle}>{roomName}</Text>
-              
+
               <Hr style={divider} />
-              
+
               <table style={detailsTable}>
                 <tr>
                   <td style={detailLabel}>📅 Дата:</td>
@@ -86,9 +84,9 @@ export function BookingConfirmationEmail({
                   <td style={detailValue}>{studioAddress}</td>
                 </tr>
               </table>
-              
+
               <Hr style={divider} />
-              
+
               <Text style={priceText}>
                 Итого: <strong>{totalPrice}</strong>
               </Text>
@@ -109,7 +107,7 @@ export function BookingConfirmationEmail({
             </Text>
 
             <Text style={smallText}>
-              Если у вас возникли вопросы, свяжитесь с владельцем студии через 
+              Если у вас возникли вопросы, свяжитесь с владельцем студии через
               личные сообщения на сайте или напишите нам на{" "}
               <Link href="mailto:support@photomarket.tech" style={link}>
                 support@photomarket.tech
@@ -127,11 +125,17 @@ export function BookingConfirmationEmail({
                 Сайт
               </Link>
               {" • "}
-              <Link href="https://www.photomarket.tech/terms" style={footerLink}>
+              <Link
+                href="https://www.photomarket.tech/terms"
+                style={footerLink}
+              >
                 Условия
               </Link>
               {" • "}
-              <Link href="https://www.photomarket.tech/contacts" style={footerLink}>
+              <Link
+                href="https://www.photomarket.tech/contacts"
+                style={footerLink}
+              >
                 Контакты
               </Link>
             </Text>

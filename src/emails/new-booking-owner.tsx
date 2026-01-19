@@ -53,11 +53,9 @@ export function NewBookingOwnerEmail({
           {/* Main Content */}
           <Section style={content}>
             <Heading style={heading}>🎉 Новое бронирование!</Heading>
-            
-            <Text style={paragraph}>
-              Здравствуйте, {ownerName}!
-            </Text>
-            
+
+            <Text style={paragraph}>Здравствуйте, {ownerName}!</Text>
+
             <Text style={paragraph}>
               У вас новое бронирование в студии <strong>{studioName}</strong>.
             </Text>
@@ -65,9 +63,9 @@ export function NewBookingOwnerEmail({
             {/* Booking Details Card */}
             <Section style={bookingCard}>
               <Text style={bookingTitle}>{roomName}</Text>
-              
+
               <Hr style={divider} />
-              
+
               <table style={detailsTable}>
                 <tr>
                   <td style={detailLabel}>👤 Клиент:</td>
@@ -94,9 +92,9 @@ export function NewBookingOwnerEmail({
                   <td style={detailValue}>{duration}</td>
                 </tr>
               </table>
-              
+
               <Hr style={divider} />
-              
+
               <Text style={priceText}>
                 Сумма: <strong>{totalPrice}</strong>
               </Text>

@@ -66,7 +66,7 @@ export function StudioPageSkeleton() {
           <Skeleton className="h-6 w-full" />
           <Skeleton className="h-6 w-4/5" />
           <Skeleton className="h-6 w-3/4" />
-          
+
           <div className="mt-8">
             <Skeleton className="h-8 w-48 mb-4" />
             <div className="grid grid-cols-2 gap-4">
