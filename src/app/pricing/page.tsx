@@ -23,6 +23,10 @@ export const metadata: Metadata = {
     description:
       "Прозрачные условия размещения фотостудий. Без скрытых платежей.",
   },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function PricingPage() {

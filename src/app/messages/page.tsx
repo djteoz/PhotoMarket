@@ -75,7 +75,7 @@ export default async function MessagesPage() {
           ) : (
             conversations.map((conversation) => {
               const otherUser = conversation.users.find(
-                (u) => u.id !== dbUser?.id
+                (u) => u.id !== dbUser?.id,
               );
               const lastMessage = conversation.messages[0];
 

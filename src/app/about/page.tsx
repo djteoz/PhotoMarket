@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   title: "О нас",
   description:
     "PhotoMarket — современная платформа для поиска и бронирования фотостудий по всей России. Узнайте о нашей миссии и преимуществах.",
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function AboutPage() {

@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   title: "Контакты",
   description:
     "Свяжитесь с командой PhotoMarket. Мы всегда рады помочь с вопросами по бронированию фотостудий.",
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function ContactsPage() {

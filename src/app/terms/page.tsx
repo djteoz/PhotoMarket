@@ -16,6 +16,10 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Пользовательское соглашение — PhotoMarket",
   description: "Пользовательское соглашение сервиса PhotoMarket",
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function TermsPage() {

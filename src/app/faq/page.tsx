@@ -21,6 +21,10 @@ export const metadata: Metadata = {
     "бронирование фотостудии",
     "аренда студии",
   ],
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 const faqCategories = [

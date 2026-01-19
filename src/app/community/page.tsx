@@ -17,6 +17,10 @@ export const metadata: Metadata = {
     "фотографы России",
     "обсуждение фотостудий",
   ],
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function CommunityPage({

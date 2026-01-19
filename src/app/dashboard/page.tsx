@@ -150,19 +150,19 @@ export default async function DashboardPage() {
   const totalRooms = dbUser.studios.reduce((acc, s) => acc + s.rooms.length, 0);
   const totalReviews = dbUser.studios.reduce(
     (acc, s) => acc + s.reviews.length,
-    0
+    0,
   );
   const avgRating =
     totalReviews > 0
       ? (
           dbUser.studios.reduce(
             (acc, s) => acc + s.reviews.reduce((a, r) => a + r.rating, 0),
-            0
+            0,
           ) / totalReviews
         ).toFixed(1)
       : null;
   const pendingBookings = incomingBookings.filter(
-    (b) => b.status === "PENDING"
+    (b) => b.status === "PENDING",
   ).length;
   const totalEarnings = payments
     .filter((p) => p.status === "SUCCEEDED")
@@ -382,7 +382,7 @@ export default async function DashboardPage() {
                     studio: Studio & {
                       rooms: { id: string }[];
                       reviews: { rating: number }[];
-                    }
+                    },
                   ) => {
                     const studioRating =
                       studio.reviews.length > 0
@@ -478,7 +478,7 @@ export default async function DashboardPage() {
                         </CardContent>
                       </Card>
                     );
-                  }
+                  },
                 )}
               </div>
             )}
@@ -540,17 +540,17 @@ export default async function DashboardPage() {
                               booking.status === "CONFIRMED"
                                 ? "bg-green-100 text-green-700"
                                 : booking.status === "PENDING"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-slate-100 text-slate-700"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-slate-100 text-slate-700"
                             }`}
                           >
                             {booking.status === "CONFIRMED"
                               ? "Подтверждено"
                               : booking.status === "PENDING"
-                              ? "Ожидание"
-                              : booking.status === "CANCELLED"
-                              ? "Отменено"
-                              : booking.status}
+                                ? "Ожидание"
+                                : booking.status === "CANCELLED"
+                                  ? "Отменено"
+                                  : booking.status}
                           </span>
                         </div>
                         <BookingActions
@@ -623,17 +623,17 @@ export default async function DashboardPage() {
                               booking.status === "CONFIRMED"
                                 ? "bg-green-100 text-green-700"
                                 : booking.status === "PENDING"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : "bg-slate-100 text-slate-700"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-slate-100 text-slate-700"
                             }`}
                           >
                             {booking.status === "CONFIRMED"
                               ? "Подтверждено"
                               : booking.status === "PENDING"
-                              ? "Ожидание"
-                              : booking.status === "CANCELLED"
-                              ? "Отменено"
-                              : booking.status}
+                                ? "Ожидание"
+                                : booking.status === "CANCELLED"
+                                  ? "Отменено"
+                                  : booking.status}
                           </span>
                         </div>
                         <BookingActions
@@ -678,7 +678,7 @@ export default async function DashboardPage() {
                   const minStudioPrice =
                     studio.rooms.length > 0
                       ? Math.min(
-                          ...studio.rooms.map((r) => Number(r.pricePerHour))
+                          ...studio.rooms.map((r) => Number(r.pricePerHour)),
                         )
                       : null;
 
@@ -798,15 +798,15 @@ export default async function DashboardPage() {
                               payment.status === "SUCCEEDED"
                                 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                                 : payment.status === "PENDING"
-                                ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                  ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                             }`}
                           >
                             {payment.status === "SUCCEEDED"
                               ? "Оплачено"
                               : payment.status === "PENDING"
-                              ? "Ожидание"
-                              : "Отменено"}
+                                ? "Ожидание"
+                                : "Отменено"}
                           </span>
                         </td>
                       </tr>

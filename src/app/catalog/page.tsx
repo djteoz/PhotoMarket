@@ -28,6 +28,10 @@ export const metadata: Metadata = {
   title: "Каталог фотостудий",
   description:
     "Полный каталог фотостудий для аренды. Выбирайте из сотен залов по всей России с актуальными ценами и онлайн-бронированием.",
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default async function CatalogPage({
