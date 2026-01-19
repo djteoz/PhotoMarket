@@ -1,6 +1,15 @@
 import { SignUp } from "@clerk/nextjs";
 import { Camera } from "lucide-react";
 import Link from "next/link";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Регистрация — PhotoMarket",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function Page() {
   return (

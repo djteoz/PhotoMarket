@@ -65,14 +65,18 @@ export function trackEvent(
     }
     // Также отправляем в Яндекс.Метрику
     if (
-      typeof (window as unknown as { ym?: (id: string, goal: string, action: string) => void }).ym !== "undefined" &&
+      typeof (
+        window as unknown as {
+          ym?: (id: string, goal: string, action: string) => void;
+        }
+      ).ym !== "undefined" &&
       process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID
     ) {
-      (window as unknown as { ym: (id: string, goal: string, action: string) => void }).ym(
-        process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID,
-        "reachGoal",
-        action
-      );
+      (
+        window as unknown as {
+          ym: (id: string, goal: string, action: string) => void;
+        }
+      ).ym(process.env.NEXT_PUBLIC_YANDEX_METRIKA_ID, "reachGoal", action);
     }
   }
 }

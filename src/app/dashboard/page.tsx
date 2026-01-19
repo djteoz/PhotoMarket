@@ -32,6 +32,10 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Личный кабинет — PhotoMarket",
   description: "Управляйте своими студиями, бронированиями и настройками",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function DashboardPage() {

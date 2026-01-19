@@ -21,6 +21,10 @@ import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
   title: "Мой профиль — PhotoMarket",
   description: "Управление профилем и настройками аккаунта",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function ProfilePage() {

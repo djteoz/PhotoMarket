@@ -66,7 +66,8 @@ export const bookingRouter = router({
 
       // Calculate total price
       const hours =
-        (input.endTime.getTime() - input.startTime.getTime()) / (1000 * 60 * 60);
+        (input.endTime.getTime() - input.startTime.getTime()) /
+        (1000 * 60 * 60);
       const totalPrice = Number(room.pricePerHour) * hours;
 
       // Create booking
@@ -94,9 +95,13 @@ export const bookingRouter = router({
    */
   myBookings: protectedProcedure
     .input(
-      z.object({
-        status: z.enum(["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"]).optional(),
-      }).optional()
+      z
+        .object({
+          status: z
+            .enum(["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED"])
+            .optional(),
+        })
+        .optional()
     )
     .query(async ({ ctx, input }) => {
       if (!ctx.dbUser) {

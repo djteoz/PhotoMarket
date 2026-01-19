@@ -13,6 +13,10 @@ import { MessageSquare, Sparkles, Users, ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Сообщения — PhotoMarket",
   description: "Ваши диалоги с владельцами студий и клиентами",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function MessagesPage() {

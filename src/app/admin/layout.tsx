@@ -11,6 +11,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminMobileNav } from "@/components/admin/admin-mobile-nav";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminLayout({
   children,

@@ -126,9 +126,17 @@ export default async function CityPage({ params }: CityPageProps) {
     return Math.round(avg * 10) / 10;
   };
 
-  const getMinPrice = (rooms: { pricePerHour: number | { toNumber: () => number } }[]) => {
+  const getMinPrice = (
+    rooms: { pricePerHour: number | { toNumber: () => number } }[]
+  ) => {
     if (rooms.length === 0) return 0;
-    return Math.min(...rooms.map((r) => typeof r.pricePerHour === "number" ? r.pricePerHour : Number(r.pricePerHour)));
+    return Math.min(
+      ...rooms.map((r) =>
+        typeof r.pricePerHour === "number"
+          ? r.pricePerHour
+          : Number(r.pricePerHour)
+      )
+    );
   };
 
   const baseUrl = "https://www.photomarket.tech";

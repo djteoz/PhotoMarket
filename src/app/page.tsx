@@ -66,9 +66,17 @@ export default async function Home() {
   };
 
   // Минимальная цена студии
-  const getMinPrice = (rooms: { pricePerHour: number | { toNumber: () => number } }[]) => {
+  const getMinPrice = (
+    rooms: { pricePerHour: number | { toNumber: () => number } }[]
+  ) => {
     if (rooms.length === 0) return 0;
-    return Math.min(...rooms.map((r) => typeof r.pricePerHour === "number" ? r.pricePerHour : Number(r.pricePerHour)));
+    return Math.min(
+      ...rooms.map((r) =>
+        typeof r.pricePerHour === "number"
+          ? r.pricePerHour
+          : Number(r.pricePerHour)
+      )
+    );
   };
 
   return (

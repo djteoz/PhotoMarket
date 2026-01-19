@@ -9,14 +9,16 @@ export const studioRouter = router({
    */
   list: publicProcedure
     .input(
-      z.object({
-        city: z.string().optional(),
-        minPrice: z.number().optional(),
-        maxPrice: z.number().optional(),
-        hasNaturalLight: z.boolean().optional(),
-        limit: z.number().min(1).max(100).default(50),
-        cursor: z.string().optional(), // for pagination
-      }).default({})
+      z
+        .object({
+          city: z.string().optional(),
+          minPrice: z.number().optional(),
+          maxPrice: z.number().optional(),
+          hasNaturalLight: z.boolean().optional(),
+          limit: z.number().min(1).max(100).default(50),
+          cursor: z.string().optional(), // for pagination
+        })
+        .default({})
     )
     .query(async ({ ctx, input }) => {
       const cacheKey = cacheKeys.studiosList(input.city);
