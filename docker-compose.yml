@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: photomarket
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - UPLOADTHING_TOKEN=${UPLOADTHING_TOKEN}
+      - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+      - SENTRY_ORG=${SENTRY_ORG}
+      - SENTRY_PROJECT=${SENTRY_PROJECT}
+      - NEXT_PUBLIC_SENTRY_DSN=${NEXT_PUBLIC_SENTRY_DSN}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - NEXT_PUBLIC_YANDEX_MAPS_API_KEY=${NEXT_PUBLIC_YANDEX_MAPS_API_KEY}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
