@@ -82,9 +82,8 @@ export async function createSubscriptionPayment(
     let redirectUrl = "";
 
     if (provider === "YOOKASSA") {
-      const returnUrl = `${
-        process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
-      }/api/payment/callback/yookassa?paymentId=${payment.id}`;
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://photomarket.tech";
+      const returnUrl = `${appUrl}/api/payment/callback/yookassa?paymentId=${payment.id}`;
       const yookassaPayment = await createYookassaPayment(
         amount,
         `Подписка ${plan} для ${user.emailAddresses[0].emailAddress}`,
