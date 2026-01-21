@@ -16,7 +16,7 @@ const PLAN_PRICES = {
 export async function updateUserSubscription(
   userId: string,
   plan: SubscriptionPlan,
-  months: number = 1
+  months: number = 1,
 ) {
   try {
     const endsAt = new Date();
@@ -40,7 +40,7 @@ export async function updateUserSubscription(
 
 export async function createSubscriptionPayment(
   plan: SubscriptionPlan,
-  provider: "YOOKASSA" | "ROBOKASSA"
+  provider: "YOOKASSA" | "ROBOKASSA",
 ) {
   const user = await currentUser();
 
@@ -82,13 +82,14 @@ export async function createSubscriptionPayment(
     let redirectUrl = "";
 
     if (provider === "YOOKASSA") {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "https://photomarket.tech";
+      // Hardcoded URL to avoid Docker environment issues
+      const appUrl = "https://photomarket.tech";
       const returnUrl = `${appUrl}/api/payment/callback/yookassa?paymentId=${payment.id}`;
       const yookassaPayment = await createYookassaPayment(
         amount,
         `Подписка ${plan} для ${user.emailAddresses[0].emailAddress}`,
         returnUrl,
-        { paymentId: payment.id, plan: plan, userId: dbUser.id }
+        { paymentId: payment.id, plan: plan, userId: dbUser.id },
       );
 
       await prisma.payment.update({
@@ -118,7 +119,7 @@ export async function createSubscriptionPayment(
         amount,
         invId,
         `Подписка ${plan}`,
-        user.emailAddresses[0].emailAddress
+        user.emailAddresses[0].emailAddress,
       );
     }
 
