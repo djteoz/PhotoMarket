@@ -19,10 +19,10 @@ async function getYookassaPaymentStatus(externalId: string) {
         Authorization:
           "Basic " +
           Buffer.from(`${YOOKASSA_SHOP_ID}:${YOOKASSA_SECRET_KEY}`).toString(
-            "base64"
+            "base64",
           ),
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
 
   if (!payment) {
     return NextResponse.redirect(
-      new URL("/pricing?error=payment_not_found", req.url)
+      new URL("/pricing?error=payment_not_found", req.url),
     );
   }
 
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
   if (mockSuccess === "success") {
     await activateSubscription(paymentId, payment.plan);
     return NextResponse.redirect(
-      new URL("/dashboard?payment=success", req.url)
+      new URL("/dashboard?payment=success", req.url),
     );
   }
 
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
     if (yookassaStatus?.status === "succeeded") {
       await activateSubscription(paymentId, payment.plan);
       return NextResponse.redirect(
-        new URL("/dashboard?payment=success", req.url)
+        new URL("/dashboard?payment=success", req.url),
       );
     } else if (yookassaStatus?.status === "canceled") {
       await prisma.payment.update({
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
         data: { status: "CANCELED" },
       });
       return NextResponse.redirect(
-        new URL("/pricing?error=payment_canceled", req.url)
+        new URL("/pricing?error=payment_canceled", req.url),
       );
     }
   }
@@ -115,14 +115,12 @@ export async function GET(req: NextRequest) {
   // Payment already succeeded
   if (payment.status === "SUCCEEDED") {
     return NextResponse.redirect(
-      new URL("/dashboard?payment=success", req.url)
+      new URL("/dashboard?payment=success", req.url),
     );
   }
 
   // Still pending - redirect to dashboard with waiting status
-  return NextResponse.redirect(
-    new URL("/dashboard?payment=pending", req.url)
-  );
+  return NextResponse.redirect(new URL("/dashboard?payment=pending", req.url));
 }
 
 // POST: YooKassa Webhook (called by YooKassa servers)
@@ -156,6 +154,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Webhook error:", error);
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Webhook processing failed" },
+      { status: 500 },
+    );
   }
 }

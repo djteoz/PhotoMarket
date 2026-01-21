@@ -27,6 +27,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 ENV SKIP_ENV_VALIDATION=1
 
+# Set public URL for build time
+ARG NEXT_PUBLIC_APP_URL=https://photomarket.tech
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
 RUN npm run build
 
 # Stage 3: Runner
