@@ -1,6 +1,9 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
+// Disable static generation - sitemap requires DB access at runtime
+export const dynamic = "force-dynamic";
+
 // Транслитерация для URL городов
 function transliterate(text: string): string {
   const map: Record<string, string> = {
