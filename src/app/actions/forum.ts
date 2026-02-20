@@ -1,16 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { ensureDbUser } from "@/lib/ensure-db-user";
 
 export async function createPost(formData: FormData) {
-  const user = await currentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const dbUser = await prisma.user.findUnique({ where: { clerkId: user.id } });
-  if (!dbUser) throw new Error("User not found");
-  if (dbUser.isBanned) throw new Error("User is banned");
+  try {
+    const { dbUser } = await ensureDbUser();
+    if (!dbUser) return { error: "Необходимо авторизоваться" };
+    if (dbUser.isBanned) return { error: "Пользователь заблокирован" };
 
   const title = formData.get("title") as string;
   const content = formData.get("content") as string;
@@ -35,17 +33,15 @@ export async function createPost(formData: FormData) {
     return { success: true, postId: post.id };
   } catch (error) {
     console.error("Error creating post:", error);
-    return { error: "Failed to create post" };
+    return { error: "Не удалось создать пост" };
   }
 }
 
 export async function createComment(formData: FormData) {
-  const user = await currentUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const dbUser = await prisma.user.findUnique({ where: { clerkId: user.id } });
-  if (!dbUser) throw new Error("User not found");
-  if (dbUser.isBanned) throw new Error("User is banned");
+  try {
+    const { dbUser } = await ensureDbUser();
+    if (!dbUser) return { error: "Необходимо авторизоваться" };
+    if (dbUser.isBanned) return { error: "Пользователь заблокирован" };
 
   const content = formData.get("content") as string;
   const postId = formData.get("postId") as string;
@@ -69,16 +65,14 @@ export async function createComment(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error("Error creating comment:", error);
-    return { error: "Failed to create comment" };
+    return { error: "Не удалось создать комментарий" };
   }
 }
 
 export async function togglePostLike(postId: string) {
-  const user = await currentUser();
-  if (!user) return { error: "Unauthorized" };
-
-  const dbUser = await prisma.user.findUnique({ where: { clerkId: user.id } });
-  if (!dbUser) return { error: "User not found" };
+  try {
+    const { dbUser } = await ensureDbUser();
+    if (!dbUser) return { error: "Необходимо авторизоваться" };
 
   try {
     const existingLike = await prisma.forumLike.findUnique({
@@ -104,22 +98,25 @@ export async function togglePostLike(postId: string) {
     revalidatePath(`/community/post/${postId}`);
     return { success: true };
   } catch (error) {
-    return { error: "Failed to update like" };
+    return { error: "Не удалось обновить лайк" };
   }
 }
 
 export async function incrementView(postId: string) {
-  await prisma.forumPost.update({
-    where: { id: postId },
-    data: { views: { increment: 1 } },
-  });
+  try {
+    await prisma.forumPost.update({
+      where: { id: postId },
+      data: { views: { increment: 1 } },
+    });
+  } catch (error) {
+    // silently fail
+  }
 }
 
 export async function deletePost(postId: string) {
-  const user = await currentUser();
-  if (!user) return { error: "Unauthorized" };
-  const dbUser = await prisma.user.findUnique({ where: { clerkId: user.id } });
-  if (!dbUser) return { error: "User not found" };
+  try {
+    const { dbUser } = await ensureDbUser();
+    if (!dbUser) return { error: "Необходимо авторизоваться" };
 
   const post = await prisma.forumPost.findUnique({ where: { id: postId } });
   if (!post) return { error: "Post not found" };
@@ -130,16 +127,19 @@ export async function deletePost(postId: string) {
 
   if (!canDelete) return { error: "Permission denied" };
 
-  await prisma.forumPost.delete({ where: { id: postId } });
-  revalidatePath("/community");
-  return { success: true };
+    await prisma.forumPost.delete({ where: { id: postId } });
+    revalidatePath("/community");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    return { error: "Не удалось удалить пост" };
+  }
 }
 
 export async function deleteComment(commentId: string) {
-  const user = await currentUser();
-  if (!user) return { error: "Unauthorized" };
-  const dbUser = await prisma.user.findUnique({ where: { clerkId: user.id } });
-  if (!dbUser) return { error: "User not found" };
+  try {
+    const { dbUser } = await ensureDbUser();
+    if (!dbUser) return { error: "Необходимо авторизоваться" };
 
   const comment = await prisma.forumComment.findUnique({
     where: { id: commentId },
@@ -152,7 +152,11 @@ export async function deleteComment(commentId: string) {
 
   if (!canDelete) return { error: "Permission denied" };
 
-  await prisma.forumComment.delete({ where: { id: commentId } });
-  revalidatePath(`/community/post/${comment.postId}`);
-  return { success: true };
+    await prisma.forumComment.delete({ where: { id: commentId } });
+    revalidatePath(`/community/post/${comment.postId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    return { error: "Не удалось удалить комментарий" };
+  }
 }

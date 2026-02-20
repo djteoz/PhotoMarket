@@ -1,116 +1,117 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { ensureDbUser } from "@/lib/ensure-db-user";
 
 export async function startConversation(receiverId: string) {
-  const user = await currentUser();
-  if (!user) throw new Error("Unauthorized");
+  try {
+    const { dbUser } = await ensureDbUser();
+    if (!dbUser) return { error: "Необходимо авторизоваться" };
 
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-  });
-  if (!dbUser) throw new Error("User not found");
-
-  // Check if conversation already exists
-  const existingConversation = await prisma.conversation.findFirst({
-    where: {
-      AND: [
-        { users: { some: { id: dbUser.id } } },
-        { users: { some: { id: receiverId } } },
-      ],
-    },
-  });
-
-  if (existingConversation) {
-    return { id: existingConversation.id };
-  }
-
-  // Create new conversation
-  const conversation = await prisma.conversation.create({
-    data: {
-      users: {
-        connect: [{ id: dbUser.id }, { id: receiverId }],
+    // Check if conversation already exists
+    const existingConversation = await prisma.conversation.findFirst({
+      where: {
+        AND: [
+          { users: { some: { id: dbUser.id } } },
+          { users: { some: { id: receiverId } } },
+        ],
       },
-    },
-  });
+    });
 
-  return { id: conversation.id };
+    if (existingConversation) {
+      return { id: existingConversation.id };
+    }
+
+    // Create new conversation
+    const conversation = await prisma.conversation.create({
+      data: {
+        users: {
+          connect: [{ id: dbUser.id }, { id: receiverId }],
+        },
+      },
+    });
+
+    return { id: conversation.id };
+  } catch (error) {
+    console.error("Error starting conversation:", error);
+    return { error: "Не удалось начать беседу" };
+  }
 }
 
 export async function sendMessage(conversationId: string, content: string) {
-  const user = await currentUser();
-  if (!user) throw new Error("Unauthorized");
+  try {
+    const { dbUser } = await ensureDbUser();
+    if (!dbUser) return { error: "Необходимо авторизоваться" };
 
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-  });
-  if (!dbUser) throw new Error("User not found");
+    await prisma.message.create({
+      data: {
+        conversationId,
+        senderId: dbUser.id,
+        content,
+      },
+    });
 
-  await prisma.message.create({
-    data: {
-      conversationId,
-      senderId: dbUser.id,
-      content,
-    },
-  });
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
 
-  await prisma.conversation.update({
-    where: { id: conversationId },
-    data: { updatedAt: new Date() },
-  });
-
-  revalidatePath(`/messages/${conversationId}`);
+    revalidatePath(`/messages/${conversationId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return { error: "Не удалось отправить сообщение" };
+  }
 }
 
 export async function getConversations() {
-  const user = await currentUser();
-  if (!user) return [];
+  try {
+    const { dbUser } = await ensureDbUser();
+    if (!dbUser) return [];
 
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-  });
-  if (!dbUser) return [];
-
-  const conversations = await prisma.conversation.findMany({
-    where: {
-      users: { some: { id: dbUser.id } },
-    },
-    include: {
-      users: true,
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
+    const conversations = await prisma.conversation.findMany({
+      where: {
+        users: { some: { id: dbUser.id } },
       },
-    },
-    orderBy: { updatedAt: "desc" },
-  });
+      include: {
+        users: true,
+        messages: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+      },
+      orderBy: { updatedAt: "desc" },
+    });
 
-  return conversations;
+    return conversations;
+  } catch (error) {
+    console.error("Error getting conversations:", error);
+    return [];
+  }
 }
 
 export async function getMessages(conversationId: string) {
-  const user = await currentUser();
-  if (!user) throw new Error("Unauthorized");
+  try {
+    const { dbUser } = await ensureDbUser();
+    if (!dbUser) return [];
 
-  // Verify user is part of conversation
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-  });
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+      include: { users: true },
+    });
 
-  const conversation = await prisma.conversation.findUnique({
-    where: { id: conversationId },
-    include: { users: true },
-  });
+    if (!conversation || !conversation.users.some((u) => u.id === dbUser.id)) {
+      return [];
+    }
 
-  if (!conversation || !conversation.users.some((u) => u.id === dbUser?.id)) {
-    throw new Error("Unauthorized");
+    return await prisma.message.findMany({
+      where: { conversationId },
+      orderBy: { createdAt: "asc" },
+      include: { sender: true },
+    });
+  } catch (error) {
+    console.error("Error getting messages:", error);
+    return [];
   }
-
-  return await prisma.message.findMany({
-    where: { conversationId },
-    orderBy: { createdAt: "asc" },
-    include: { sender: true },
-  });
 }

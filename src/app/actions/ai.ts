@@ -7,7 +7,7 @@ import {
   generateStudioTags,
   answerStudioQuestion,
 } from "@/lib/ai/yandex-gpt";
-import { currentUser } from "@clerk/nextjs/server";
+import { ensureDbUser } from "@/lib/ensure-db-user";
 import { prisma } from "@/lib/prisma";
 import { rateLimiter, RATE_LIMITS } from "@/lib/rate-limit";
 
@@ -33,61 +33,64 @@ async function checkAIRateLimit(userId: string) {
  * AI-генерация описания студии
  */
 export async function generateDescription(studioId: string) {
-  const user = await currentUser();
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
-
-  const rateLimit = await checkAIRateLimit(user.id);
-  if (rateLimit) return rateLimit;
-
-  const studio = await prisma.studio.findUnique({
-    where: { id: studioId },
-    include: {
-      rooms: {
-        include: { amenities: true },
-      },
-      owner: { select: { clerkId: true } },
-    },
-  });
-
-  if (!studio) {
-    return { error: "Студия не найдена" };
-  }
-
-  if (studio.owner.clerkId !== user.id) {
-    return { error: "Нет доступа к этой студии" };
-  }
-
   try {
-    const features: string[] = [];
+    const result = await ensureDbUser();
+    if (!result) return { error: "Необходимо авторизоваться" };
+    const { clerkUser } = result;
 
-    // Collect features from rooms
-    studio.rooms.forEach((room) => {
-      if (room.hasNaturalLight) features.push("естественный свет");
-      room.amenities.forEach((a) => features.push(a.name));
+    const rateLimit = await checkAIRateLimit(clerkUser.id);
+    if (rateLimit) return rateLimit;
+
+    const studio = await prisma.studio.findUnique({
+      where: { id: studioId },
+      include: {
+        rooms: {
+          include: { amenities: true },
+        },
+        owner: { select: { clerkId: true } },
+      },
     });
 
-    const minPrice = Math.min(
-      ...studio.rooms.map((r) => Number(r.pricePerHour))
-    );
-    const maxPrice = Math.max(
-      ...studio.rooms.map((r) => Number(r.pricePerHour))
-    );
-    const priceRange =
-      minPrice === maxPrice ? `${minPrice}` : `${minPrice}-${maxPrice}`;
+    if (!studio) {
+      return { error: "Студия не найдена" };
+    }
 
-    const description = await generateStudioDescription({
-      name: studio.name,
-      city: studio.city,
-      rooms: studio.rooms.length,
-      features: [...new Set(features)].slice(0, 5),
-      priceRange,
-    });
+    if (studio.owner.clerkId !== clerkUser.id) {
+      return { error: "Нет доступа к этой студии" };
+    }
 
-    return { success: true, description };
+    try {
+      const features: string[] = [];
+
+      studio.rooms.forEach((room) => {
+        if (room.hasNaturalLight) features.push("естественный свет");
+        room.amenities.forEach((a) => features.push(a.name));
+      });
+
+      const minPrice = Math.min(
+        ...studio.rooms.map((r) => Number(r.pricePerHour))
+      );
+      const maxPrice = Math.max(
+        ...studio.rooms.map((r) => Number(r.pricePerHour))
+      );
+      const priceRange =
+        minPrice === maxPrice ? `${minPrice}` : `${minPrice}-${maxPrice}`;
+
+      const description = await generateStudioDescription({
+        name: studio.name,
+        city: studio.city,
+        rooms: studio.rooms.length,
+        features: [...new Set(features)].slice(0, 5),
+        priceRange,
+      });
+
+      return { success: true, description };
+    } catch (error) {
+      console.error("AI generation error:", error);
+      return { error: "Ошибка генерации. Попробуйте позже." };
+    }
   } catch (error) {
-    console.error("AI generation error:", error);
+    console.error("generateDescription error:", error);
     return { error: "Ошибка генерации. Попробуйте позже." };
   }
 }
@@ -96,16 +99,15 @@ export async function generateDescription(studioId: string) {
  * AI-поиск с естественным языком
  */
 export async function aiSearch(query: string) {
-  const user = await currentUser();
-  const userId = user?.id || "anonymous";
-
-  const rateLimit = await checkAIRateLimit(userId);
-  if (rateLimit) return rateLimit;
-
   try {
+    const result = await ensureDbUser();
+    const userId = result?.clerkUser?.id || "anonymous";
+
+    const rateLimit = await checkAIRateLimit(userId);
+    if (rateLimit) return rateLimit;
+
     const filters = await parseSearchQuery(query);
 
-    // Build Prisma query from AI-extracted filters
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = { AND: [] };
 
@@ -126,7 +128,6 @@ export async function aiSearch(query: string) {
       });
     }
 
-    // Room filters
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const roomWhere: any = {};
 
@@ -173,15 +174,14 @@ export async function aiSearch(query: string) {
  * Улучшение текста с помощью AI
  */
 export async function improveText(text: string) {
-  const user = await currentUser();
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
-
-  const rateLimit = await checkAIRateLimit(user.id);
-  if (rateLimit) return rateLimit;
-
   try {
+    const result = await ensureDbUser();
+    if (!result) return { error: "Необходимо авторизоваться" };
+    const { clerkUser } = result;
+
+    const rateLimit = await checkAIRateLimit(clerkUser.id);
+    if (rateLimit) return rateLimit;
+
     const improved = await improveDescription(text);
     return { success: true, text: improved };
   } catch (error) {
@@ -194,24 +194,23 @@ export async function improveText(text: string) {
  * Автоматическая генерация тегов
  */
 export async function generateTags(studioId: string) {
-  const user = await currentUser();
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
-
-  const rateLimit = await checkAIRateLimit(user.id);
-  if (rateLimit) return rateLimit;
-
-  const studio = await prisma.studio.findUnique({
-    where: { id: studioId },
-    include: { rooms: true },
-  });
-
-  if (!studio) {
-    return { error: "Студия не найдена" };
-  }
-
   try {
+    const result = await ensureDbUser();
+    if (!result) return { error: "Необходимо авторизоваться" };
+    const { clerkUser } = result;
+
+    const rateLimit = await checkAIRateLimit(clerkUser.id);
+    if (rateLimit) return rateLimit;
+
+    const studio = await prisma.studio.findUnique({
+      where: { id: studioId },
+      include: { rooms: true },
+    });
+
+    if (!studio) {
+      return { error: "Студия не найдена" };
+    }
+
     const fullDescription = `${studio.name}. ${studio.description || ""}. ${
       studio.city
     }. ${studio.rooms

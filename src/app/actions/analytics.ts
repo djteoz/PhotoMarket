@@ -1,6 +1,6 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
+import { ensureDbUser } from "@/lib/ensure-db-user";
 import { prisma } from "@/lib/prisma";
 import { subDays, format, startOfDay } from "date-fns";
 
@@ -144,14 +144,10 @@ export async function trackBookingComplete(studioId: string, revenue: number) {
  * Get analytics for owner's studios
  */
 export async function getOwnerAnalytics(days: number = 30) {
-  const user = await currentUser();
-  if (!user) return null;
-
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-  });
-
-  if (!dbUser) return null;
+  try {
+    const result = await ensureDbUser();
+    if (!result) return null;
+    const { dbUser } = result;
 
   const startDate = subDays(new Date(), days);
 
@@ -259,23 +255,29 @@ export async function getOwnerAnalytics(days: number = 30) {
     studios: studioStats.sort((a, b) => b.revenue - a.revenue),
     period: { start: startDate, end: new Date() },
   };
+  } catch (error) {
+    console.error("getOwnerAnalytics error:", error);
+    return null;
+  }
 }
 
 /**
  * Get single studio analytics
  */
 export async function getStudioAnalytics(studioId: string, days: number = 30) {
-  const user = await currentUser();
-  if (!user) return null;
+  try {
+    const result = await ensureDbUser();
+    if (!result) return null;
+    const { clerkUser } = result;
 
-  const studio = await prisma.studio.findUnique({
-    where: { id: studioId },
-    include: { owner: { select: { clerkId: true } } },
-  });
+    const studio = await prisma.studio.findUnique({
+      where: { id: studioId },
+      include: { owner: { select: { clerkId: true } } },
+    });
 
-  if (!studio || studio.owner.clerkId !== user.id) {
-    return null;
-  }
+    if (!studio || studio.owner.clerkId !== clerkUser.id) {
+      return null;
+    }
 
   const startDate = subDays(new Date(), days);
 
@@ -359,4 +361,8 @@ export async function getStudioAnalytics(studioId: string, days: number = 30) {
     },
     recentBookings,
   };
+  } catch (error) {
+    console.error("getStudioAnalytics error:", error);
+    return null;
+  }
 }

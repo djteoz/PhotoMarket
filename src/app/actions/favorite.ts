@@ -1,34 +1,26 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { ensureDbUser } from "@/lib/ensure-db-user";
 
 export async function toggleFavorite(studioId: string) {
-  const user = await currentUser();
-
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
-
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-  });
-
-  if (!dbUser) {
-    return { error: "User not found" };
-  }
-
-  const existingFavorite = await prisma.favorite.findUnique({
-    where: {
-      userId_studioId: {
-        userId: dbUser.id,
-        studioId,
-      },
-    },
-  });
-
   try {
+    const { dbUser } = await ensureDbUser();
+
+    if (!dbUser) {
+      return { error: "Необходимо авторизоваться" };
+    }
+
+    const existingFavorite = await prisma.favorite.findUnique({
+      where: {
+        userId_studioId: {
+          userId: dbUser.id,
+          studioId,
+        },
+      },
+    });
+
     if (existingFavorite) {
       await prisma.favorite.delete({
         where: {
@@ -53,6 +45,6 @@ export async function toggleFavorite(studioId: string) {
     }
   } catch (error) {
     console.error("Failed to toggle favorite:", error);
-    return { error: "Failed to toggle favorite" };
+    return { error: "Не удалось обновить избранное" };
   }
 }

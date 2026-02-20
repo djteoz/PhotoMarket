@@ -10,12 +10,32 @@ export const createTRPCContext = async () => {
   const { userId } = await auth();
   const user = userId ? await currentUser() : null;
 
-  // Get database user if authenticated
+  // Get or create database user if authenticated
   let dbUser = null;
   if (user) {
     dbUser = await prisma.user.findUnique({
       where: { clerkId: user.id },
     });
+
+    if (!dbUser) {
+      try {
+        dbUser = await prisma.user.create({
+          data: {
+            clerkId: user.id,
+            email: user.emailAddresses[0]?.emailAddress ?? "",
+            name:
+              [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+              "Пользователь",
+            phone: user.phoneNumbers?.[0]?.phoneNumber,
+          },
+        });
+      } catch {
+        // Race condition: another request may have created the user
+        dbUser = await prisma.user.findUnique({
+          where: { clerkId: user.id },
+        });
+      }
+    }
   }
 
   return {

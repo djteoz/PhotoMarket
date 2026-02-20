@@ -1,6 +1,6 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
+import { ensureDbUser } from "@/lib/ensure-db-user";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -45,23 +45,23 @@ export async function createPromotion(
   type: PromotionType,
   duration: PromotionDuration
 ) {
-  const user = await currentUser();
-  if (!user) {
-    return { error: "Unauthorized" };
-  }
+  try {
+    const result = await ensureDbUser();
+    if (!result) return { error: "Необходимо авторизоваться" };
+    const { clerkUser } = result;
 
-  const studio = await prisma.studio.findUnique({
-    where: { id: studioId },
-    include: { owner: { select: { clerkId: true } } },
-  });
+    const studio = await prisma.studio.findUnique({
+      where: { id: studioId },
+      include: { owner: { select: { clerkId: true } } },
+    });
 
-  if (!studio) {
-    return { error: "Студия не найдена" };
-  }
+    if (!studio) {
+      return { error: "Студия не найдена" };
+    }
 
-  if (studio.owner.clerkId !== user.id) {
-    return { error: "Нет доступа к этой студии" };
-  }
+    if (studio.owner.clerkId !== clerkUser.id) {
+      return { error: "Нет доступа к этой студии" };
+    }
 
   const amount = await getPromotionPrice(type, duration);
   const durationDays = duration === "day" ? 1 : duration === "week" ? 7 : 30;
@@ -92,79 +92,79 @@ export async function createPromotion(
     promotion,
     paymentUrl: `/api/payment/promotion?promotionId=${promotion.id}`,
   };
+  } catch (error) {
+    console.error("createPromotion error:", error);
+    return { error: "Не удалось создать продвижение" };
+  }
 }
 
 /**
  * Cancel a promotion
  */
 export async function cancelPromotion(promotionId: string) {
-  const user = await currentUser();
-  if (!user) {
-    return { error: "Unauthorized" };
+  try {
+    const result = await ensureDbUser();
+    if (!result) return { error: "Необходимо авторизоваться" };
+    const { clerkUser } = result;
+
+    const promotion = promotionsStore.find((p) => p.id === promotionId);
+
+    if (!promotion) {
+      return { error: "Продвижение не найдено" };
+    }
+
+    const studio = await prisma.studio.findUnique({
+      where: { id: promotion.studioId },
+      include: { owner: { select: { clerkId: true } } },
+    });
+
+    if (!studio || studio.owner.clerkId !== clerkUser.id) {
+      return { error: "Нет доступа" };
+    }
+
+    promotion.status = "CANCELLED";
+
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error) {
+    console.error("cancelPromotion error:", error);
+    return { error: "Не удалось отменить продвижение" };
   }
-
-  const promotion = promotionsStore.find((p) => p.id === promotionId);
-
-  if (!promotion) {
-    return { error: "Продвижение не найдено" };
-  }
-
-  // Verify ownership
-  const studio = await prisma.studio.findUnique({
-    where: { id: promotion.studioId },
-    include: { owner: { select: { clerkId: true } } },
-  });
-
-  if (!studio || studio.owner.clerkId !== user.id) {
-    return { error: "Нет доступа" };
-  }
-
-  promotion.status = "CANCELLED";
-
-  revalidatePath("/dashboard");
-  return { success: true };
 }
 
 /**
  * Get active promotions for user's studios
  */
 export async function getMyPromotions() {
-  const user = await currentUser();
-  if (!user) return [];
+  try {
+    const result = await ensureDbUser();
+    if (!result) return [];
+    const { dbUser } = result;
 
-  const dbUser = await prisma.user.findUnique({
-    where: { clerkId: user.id },
-  });
+    const studios = await prisma.studio.findMany({
+      where: { ownerId: dbUser.id },
+      select: { id: true, name: true },
+    });
 
-  if (!dbUser) return [];
+    const studioIds = new Set(studios.map((s) => s.id));
+    const now = new Date();
 
-  // Get user's studios
-  const studios = await prisma.studio.findMany({
-    where: { ownerId: dbUser.id },
-    select: { id: true, name: true },
-  });
-
-  const studioIds = new Set(studios.map((s) => s.id));
-  const now = new Date();
-
-  // Filter promotions from in-memory store
-  return promotionsStore
-    .filter(
-      (p) =>
-        studioIds.has(p.studioId) && p.status === "ACTIVE" && p.endDate > now
-    )
-    .map((p) => ({
-      ...p,
-      studio: studios.find((s) => s.id === p.studioId) || {
-        id: p.studioId,
-        name: "Unknown",
-      },
-    }));
-}
-
-/**
- * Cron job to expire promotions (call from /api/cron/expire-promotions)
- */
+    return promotionsStore
+      .filter(
+        (p) =>
+          studioIds.has(p.studioId) && p.status === "ACTIVE" && p.endDate > now
+      )
+      .map((p) => ({
+        ...p,
+        studio: studios.find((s) => s.id === p.studioId) || {
+          id: p.studioId,
+          name: "Unknown",
+        },
+      }));
+  } catch (error) {
+    console.error("getMyPromotions error:", error);
+    return [];
+  }
 export async function expirePromotions() {
   const now = new Date();
 
