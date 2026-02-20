@@ -88,7 +88,7 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
     const dateStr = format(startDateTime, "d MMMM yyyy", { locale: ru });
     const timeStr = `${format(startDateTime, "HH:mm")} - ${format(
       endDateTime,
-      "HH:mm"
+      "HH:mm",
     )}`;
 
     // To User
@@ -145,7 +145,7 @@ export async function getRoomBookings(roomId: string, date: Date) {
 
 export async function updateBookingStatus(
   bookingId: string,
-  status: "CONFIRMED" | "CANCELLED" | "COMPLETED"
+  status: "CONFIRMED" | "CANCELLED" | "COMPLETED",
 ) {
   try {
     const { clerkUser, dbUser } = await ensureDbUser();
@@ -175,7 +175,8 @@ export async function updateBookingStatus(
     }
 
     const isOwner =
-      booking.room.studio.owner.clerkId === clerkUser.id || dbUser?.role === "ADMIN";
+      booking.room.studio.owner.clerkId === clerkUser.id ||
+      dbUser?.role === "ADMIN";
     const isBooker = booking.user.clerkId === clerkUser.id;
 
     if (!isOwner && !isBooker) {
@@ -187,7 +188,9 @@ export async function updateBookingStatus(
         return { error: "Вы можете только отменить своё бронирование" };
       }
       if (booking.status === "COMPLETED" || booking.status === "CANCELLED") {
-        return { error: "Нельзя отменить завершённое или уже отменённое бронирование" };
+        return {
+          error: "Нельзя отменить завершённое или уже отменённое бронирование",
+        };
       }
     }
 

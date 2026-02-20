@@ -17,7 +17,7 @@ async function checkAIRateLimit(userId: string) {
   const result = await rateLimiter.isRateLimited(
     `ai:${userId}`,
     config.limit,
-    config.windowMs
+    config.windowMs,
   );
 
   if (result.limited) {
@@ -68,10 +68,10 @@ export async function generateDescription(studioId: string) {
       });
 
       const minPrice = Math.min(
-        ...studio.rooms.map((r) => Number(r.pricePerHour))
+        ...studio.rooms.map((r) => Number(r.pricePerHour)),
       );
       const maxPrice = Math.max(
-        ...studio.rooms.map((r) => Number(r.pricePerHour))
+        ...studio.rooms.map((r) => Number(r.pricePerHour)),
       );
       const priceRange =
         minPrice === maxPrice ? `${minPrice}` : `${minPrice}-${maxPrice}`;
@@ -257,7 +257,7 @@ export async function askAboutStudio(studioId: string, question: string) {
           amenities: r.amenities.map((a) => a.name),
         })),
       },
-      question
+      question,
     );
     return { success: true, answer };
   } catch (error) {

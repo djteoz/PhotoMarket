@@ -15,7 +15,7 @@ async function requireAdmin() {
 export async function toggleUserBan(
   userId: string,
   isBanned: boolean,
-  reason?: string
+  reason?: string,
 ) {
   try {
     await requireAdmin();

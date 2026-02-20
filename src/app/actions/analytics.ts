@@ -149,112 +149,113 @@ export async function getOwnerAnalytics(days: number = 30) {
     if (!result) return null;
     const { dbUser } = result;
 
-  const startDate = subDays(new Date(), days);
+    const startDate = subDays(new Date(), days);
 
-  // Get all owner's studios with views
-  const studios = await prisma.studio.findMany({
-    where: { ownerId: dbUser.id },
-    select: { id: true, name: true, views: true },
-  });
+    // Get all owner's studios with views
+    const studios = await prisma.studio.findMany({
+      where: { ownerId: dbUser.id },
+      select: { id: true, name: true, views: true },
+    });
 
-  if (studios.length === 0) return null;
+    if (studios.length === 0) return null;
 
-  const studioIds = studios.map((s) => s.id);
+    const studioIds = studios.map((s) => s.id);
 
-  // Get analytics data from StudioAnalytics
-  const analyticsRecords = await prisma.studioAnalytics.findMany({
-    where: {
-      studioId: { in: studioIds },
-      date: { gte: startDate },
-    },
-    orderBy: { date: "asc" },
-  });
+    // Get analytics data from StudioAnalytics
+    const analyticsRecords = await prisma.studioAnalytics.findMany({
+      where: {
+        studioId: { in: studioIds },
+        date: { gte: startDate },
+      },
+      orderBy: { date: "asc" },
+    });
 
-  // Get bookings for additional data
-  const bookings = await prisma.booking.findMany({
-    where: {
-      room: { studioId: { in: studioIds } },
-      createdAt: { gte: startDate },
-      status: { in: ["CONFIRMED", "COMPLETED"] },
-    },
-    include: {
-      room: { select: { studioId: true } },
-    },
-  });
+    // Get bookings for additional data
+    const bookings = await prisma.booking.findMany({
+      where: {
+        room: { studioId: { in: studioIds } },
+        createdAt: { gte: startDate },
+        status: { in: ["CONFIRMED", "COMPLETED"] },
+      },
+      include: {
+        room: { select: { studioId: true } },
+      },
+    });
 
-  // Aggregate data by date
-  const dailyData: Record<string, DailyData> = {};
+    // Aggregate data by date
+    const dailyData: Record<string, DailyData> = {};
 
-  // Initialize all dates
-  for (let i = 0; i <= days; i++) {
-    const date = format(subDays(new Date(), days - i), "yyyy-MM-dd");
-    dailyData[date] = { date, views: 0, clicks: 0, bookings: 0, revenue: 0 };
-  }
-
-  // Add analytics data
-  analyticsRecords.forEach((record) => {
-    const date = format(record.date, "yyyy-MM-dd");
-    if (dailyData[date]) {
-      dailyData[date].views += record.views;
-      dailyData[date].clicks += record.clicks;
-      dailyData[date].bookings += record.bookings;
-      dailyData[date].revenue += Number(record.revenue);
+    // Initialize all dates
+    for (let i = 0; i <= days; i++) {
+      const date = format(subDays(new Date(), days - i), "yyyy-MM-dd");
+      dailyData[date] = { date, views: 0, clicks: 0, bookings: 0, revenue: 0 };
     }
-  });
 
-  // Calculate totals from analytics
-  const totalViews = analyticsRecords.reduce((acc, r) => acc + r.views, 0);
-  const totalClicks = analyticsRecords.reduce((acc, r) => acc + r.clicks, 0);
-  const totalBookings = analyticsRecords.reduce(
-    (acc, r) => acc + r.bookings,
-    0
-  );
-  const totalRevenue = analyticsRecords.reduce(
-    (acc, r) => acc + Number(r.revenue),
-    0
-  );
+    // Add analytics data
+    analyticsRecords.forEach((record) => {
+      const date = format(record.date, "yyyy-MM-dd");
+      if (dailyData[date]) {
+        dailyData[date].views += record.views;
+        dailyData[date].clicks += record.clicks;
+        dailyData[date].bookings += record.bookings;
+        dailyData[date].revenue += Number(record.revenue);
+      }
+    });
 
-  const totals = {
-    views: totalViews,
-    bookings: totalBookings || bookings.length,
-    revenue:
-      totalRevenue ||
-      bookings.reduce((acc, b) => acc + Number(b.totalPrice), 0),
-    conversionRate: totalViews > 0 ? (totalBookings / totalViews) * 100 : 0,
-  };
+    // Calculate totals from analytics
+    const totalViews = analyticsRecords.reduce((acc, r) => acc + r.views, 0);
+    const totalClicks = analyticsRecords.reduce((acc, r) => acc + r.clicks, 0);
+    const totalBookings = analyticsRecords.reduce(
+      (acc, r) => acc + r.bookings,
+      0,
+    );
+    const totalRevenue = analyticsRecords.reduce(
+      (acc, r) => acc + Number(r.revenue),
+      0,
+    );
 
-  // Top studios with real data
-  const studioStats = await Promise.all(
-    studios.map(async (studio) => {
-      const studioAnalytics = analyticsRecords.filter(
-        (r) => r.studioId === studio.id
-      );
-      const studioBookings = bookings.filter(
-        (b) => b.room.studioId === studio.id
-      );
+    const totals = {
+      views: totalViews,
+      bookings: totalBookings || bookings.length,
+      revenue:
+        totalRevenue ||
+        bookings.reduce((acc, b) => acc + Number(b.totalPrice), 0),
+      conversionRate: totalViews > 0 ? (totalBookings / totalViews) * 100 : 0,
+    };
 
-      return {
-        id: studio.id,
-        name: studio.name,
-        views:
-          studio.views || studioAnalytics.reduce((acc, r) => acc + r.views, 0),
-        bookings:
-          studioAnalytics.reduce((acc, r) => acc + r.bookings, 0) ||
-          studioBookings.length,
-        revenue:
-          studioAnalytics.reduce((acc, r) => acc + Number(r.revenue), 0) ||
-          studioBookings.reduce((acc, b) => acc + Number(b.totalPrice), 0),
-        clicks: studioAnalytics.reduce((acc, r) => acc + r.clicks, 0),
-      };
-    })
-  );
+    // Top studios with real data
+    const studioStats = await Promise.all(
+      studios.map(async (studio) => {
+        const studioAnalytics = analyticsRecords.filter(
+          (r) => r.studioId === studio.id,
+        );
+        const studioBookings = bookings.filter(
+          (b) => b.room.studioId === studio.id,
+        );
 
-  return {
-    dailyData: Object.values(dailyData),
-    totals,
-    studios: studioStats.sort((a, b) => b.revenue - a.revenue),
-    period: { start: startDate, end: new Date() },
-  };
+        return {
+          id: studio.id,
+          name: studio.name,
+          views:
+            studio.views ||
+            studioAnalytics.reduce((acc, r) => acc + r.views, 0),
+          bookings:
+            studioAnalytics.reduce((acc, r) => acc + r.bookings, 0) ||
+            studioBookings.length,
+          revenue:
+            studioAnalytics.reduce((acc, r) => acc + Number(r.revenue), 0) ||
+            studioBookings.reduce((acc, b) => acc + Number(b.totalPrice), 0),
+          clicks: studioAnalytics.reduce((acc, r) => acc + r.clicks, 0),
+        };
+      }),
+    );
+
+    return {
+      dailyData: Object.values(dailyData),
+      totals,
+      studios: studioStats.sort((a, b) => b.revenue - a.revenue),
+      period: { start: startDate, end: new Date() },
+    };
   } catch (error) {
     console.error("getOwnerAnalytics error:", error);
     return null;
@@ -279,88 +280,89 @@ export async function getStudioAnalytics(studioId: string, days: number = 30) {
       return null;
     }
 
-  const startDate = subDays(new Date(), days);
+    const startDate = subDays(new Date(), days);
 
-  // Get analytics from StudioAnalytics model
-  const analyticsRecords = await prisma.studioAnalytics.findMany({
-    where: {
-      studioId,
-      date: { gte: startDate },
-    },
-    orderBy: { date: "asc" },
-  });
-
-  // Get bookings for this studio
-  const bookings = await prisma.booking.findMany({
-    where: {
-      room: { studioId },
-      createdAt: { gte: startDate },
-    },
-  });
-
-  // Recent bookings
-  const recentBookings = await prisma.booking.findMany({
-    where: { room: { studioId } },
-    include: {
-      user: { select: { name: true, email: true } },
-      room: { select: { name: true, pricePerHour: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 10,
-  });
-
-  // Build analytics data from real records
-  const analyticsData: DailyData[] = [];
-  for (let i = 0; i <= days; i++) {
-    const date = format(subDays(new Date(), days - i), "yyyy-MM-dd");
-    const record = analyticsRecords.find(
-      (r) => format(r.date, "yyyy-MM-dd") === date
-    );
-
-    analyticsData.push({
-      date,
-      views: record?.views || 0,
-      clicks: record?.clicks || 0,
-      bookings: record?.bookings || 0,
-      revenue: record ? Number(record.revenue) : 0,
+    // Get analytics from StudioAnalytics model
+    const analyticsRecords = await prisma.studioAnalytics.findMany({
+      where: {
+        studioId,
+        date: { gte: startDate },
+      },
+      orderBy: { date: "asc" },
     });
-  }
 
-  // Add booking data to analytics if not already tracked
-  bookings.forEach((b) => {
-    const date = format(b.createdAt, "yyyy-MM-dd");
-    const dayData = analyticsData.find((d) => d.date === date);
-    if (dayData && dayData.bookings === 0) {
-      dayData.bookings += 1;
-      dayData.revenue += Number(b.totalPrice);
+    // Get bookings for this studio
+    const bookings = await prisma.booking.findMany({
+      where: {
+        room: { studioId },
+        createdAt: { gte: startDate },
+      },
+    });
+
+    // Recent bookings
+    const recentBookings = await prisma.booking.findMany({
+      where: { room: { studioId } },
+      include: {
+        user: { select: { name: true, email: true } },
+        room: { select: { name: true, pricePerHour: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+
+    // Build analytics data from real records
+    const analyticsData: DailyData[] = [];
+    for (let i = 0; i <= days; i++) {
+      const date = format(subDays(new Date(), days - i), "yyyy-MM-dd");
+      const record = analyticsRecords.find(
+        (r) => format(r.date, "yyyy-MM-dd") === date,
+      );
+
+      analyticsData.push({
+        date,
+        views: record?.views || 0,
+        clicks: record?.clicks || 0,
+        bookings: record?.bookings || 0,
+        revenue: record ? Number(record.revenue) : 0,
+      });
     }
-  });
 
-  // Calculate totals
-  const totalViews =
-    analyticsRecords.reduce((acc, r) => acc + r.views, 0) || studio.views;
-  const totalClicks = analyticsRecords.reduce((acc, r) => acc + r.clicks, 0);
-  const totalBookings =
-    analyticsRecords.reduce((acc, r) => acc + r.bookings, 0) || bookings.length;
-  const totalRevenue =
-    analyticsRecords.reduce((acc, r) => acc + Number(r.revenue), 0) ||
-    bookings.reduce((acc, b) => acc + Number(b.totalPrice), 0);
+    // Add booking data to analytics if not already tracked
+    bookings.forEach((b) => {
+      const date = format(b.createdAt, "yyyy-MM-dd");
+      const dayData = analyticsData.find((d) => d.date === date);
+      if (dayData && dayData.bookings === 0) {
+        dayData.bookings += 1;
+        dayData.revenue += Number(b.totalPrice);
+      }
+    });
 
-  return {
-    studio: {
-      id: studio.id,
-      name: studio.name,
-      totalViews: studio.views,
-    },
-    analytics: analyticsData,
-    totals: {
-      views: totalViews,
-      clicks: totalClicks,
-      bookings: totalBookings,
-      revenue: totalRevenue,
-    },
-    recentBookings,
-  };
+    // Calculate totals
+    const totalViews =
+      analyticsRecords.reduce((acc, r) => acc + r.views, 0) || studio.views;
+    const totalClicks = analyticsRecords.reduce((acc, r) => acc + r.clicks, 0);
+    const totalBookings =
+      analyticsRecords.reduce((acc, r) => acc + r.bookings, 0) ||
+      bookings.length;
+    const totalRevenue =
+      analyticsRecords.reduce((acc, r) => acc + Number(r.revenue), 0) ||
+      bookings.reduce((acc, b) => acc + Number(b.totalPrice), 0);
+
+    return {
+      studio: {
+        id: studio.id,
+        name: studio.name,
+        totalViews: studio.views,
+      },
+      analytics: analyticsData,
+      totals: {
+        views: totalViews,
+        clicks: totalClicks,
+        bookings: totalBookings,
+        revenue: totalRevenue,
+      },
+      recentBookings,
+    };
   } catch (error) {
     console.error("getStudioAnalytics error:", error);
     return null;

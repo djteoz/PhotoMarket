@@ -30,7 +30,6 @@ export async function createRoom(
       return { error: "Необходимо авторизоваться" };
     }
 
-    // Проверяем, является ли пользователь владельцем студии
     const studio = await prisma.studio.findUnique({
       where: { id: studioId },
       include: { owner: true },
@@ -44,23 +43,22 @@ export async function createRoom(
       return { error: "Нет прав для добавления зала" };
     }
 
-  const validatedFields = roomSchema.safeParse(formData);
+    const validatedFields = roomSchema.safeParse(formData);
 
-  if (!validatedFields.success) {
-    return { error: "Invalid fields" };
-  }
+    if (!validatedFields.success) {
+      return { error: "Неверные данные формы" };
+    }
 
-  const {
-    name,
-    description,
-    pricePerHour,
-    area,
-    capacity,
-    hasNaturalLight,
-    images,
-  } = validatedFields.data;
+    const {
+      name,
+      description,
+      pricePerHour,
+      area,
+      capacity,
+      hasNaturalLight,
+      images,
+    } = validatedFields.data;
 
-  try {
     await prisma.room.create({
       data: {
         studioId,
@@ -75,7 +73,7 @@ export async function createRoom(
     });
   } catch (error) {
     console.error("Failed to create room:", error);
-    return { error: "Failed to create room" };
+    return { error: "Не удалось создать зал" };
   }
 
   redirect(`/studios/${studioId}`);

@@ -10,15 +10,14 @@ export async function createPost(formData: FormData) {
     if (!dbUser) return { error: "Необходимо авторизоваться" };
     if (dbUser.isBanned) return { error: "Пользователь заблокирован" };
 
-  const title = formData.get("title") as string;
-  const content = formData.get("content") as string;
-  const categoryId = formData.get("categoryId") as string;
+    const title = formData.get("title") as string;
+    const content = formData.get("content") as string;
+    const categoryId = formData.get("categoryId") as string;
 
-  if (!title || !content || !categoryId) {
-    return { error: "Missing required fields" };
-  }
+    if (!title || !content || !categoryId) {
+      return { error: "Заполните все обязательные поля" };
+    }
 
-  try {
     const post = await prisma.forumPost.create({
       data: {
         title,
@@ -43,15 +42,14 @@ export async function createComment(formData: FormData) {
     if (!dbUser) return { error: "Необходимо авторизоваться" };
     if (dbUser.isBanned) return { error: "Пользователь заблокирован" };
 
-  const content = formData.get("content") as string;
-  const postId = formData.get("postId") as string;
-  const parentId = formData.get("parentId") as string | null;
+    const content = formData.get("content") as string;
+    const postId = formData.get("postId") as string;
+    const parentId = formData.get("parentId") as string | null;
 
-  if (!content || !postId) {
-    return { error: "Missing content or post ID" };
-  }
+    if (!content || !postId) {
+      return { error: "Заполните все обязательные поля" };
+    }
 
-  try {
     await prisma.forumComment.create({
       data: {
         content,
@@ -74,7 +72,6 @@ export async function togglePostLike(postId: string) {
     const { dbUser } = await ensureDbUser();
     if (!dbUser) return { error: "Необходимо авторизоваться" };
 
-  try {
     const existingLike = await prisma.forumLike.findUnique({
       where: {
         userId_postId: {
@@ -98,6 +95,7 @@ export async function togglePostLike(postId: string) {
     revalidatePath(`/community/post/${postId}`);
     return { success: true };
   } catch (error) {
+    console.error("Error toggling like:", error);
     return { error: "Не удалось обновить лайк" };
   }
 }
@@ -118,14 +116,14 @@ export async function deletePost(postId: string) {
     const { dbUser } = await ensureDbUser();
     if (!dbUser) return { error: "Необходимо авторизоваться" };
 
-  const post = await prisma.forumPost.findUnique({ where: { id: postId } });
-  if (!post) return { error: "Post not found" };
+    const post = await prisma.forumPost.findUnique({ where: { id: postId } });
+    if (!post) return { error: "Пост не найден" };
 
-  const canDelete =
-    dbUser.id === post.authorId ||
-    ["ADMIN", "OWNER", "MODERATOR"].includes(dbUser.role);
+    const canDelete =
+      dbUser.id === post.authorId ||
+      ["ADMIN", "OWNER", "MODERATOR"].includes(dbUser.role);
 
-  if (!canDelete) return { error: "Permission denied" };
+    if (!canDelete) return { error: "Нет прав для удаления" };
 
     await prisma.forumPost.delete({ where: { id: postId } });
     revalidatePath("/community");
@@ -141,16 +139,16 @@ export async function deleteComment(commentId: string) {
     const { dbUser } = await ensureDbUser();
     if (!dbUser) return { error: "Необходимо авторизоваться" };
 
-  const comment = await prisma.forumComment.findUnique({
-    where: { id: commentId },
-  });
-  if (!comment) return { error: "Comment not found" };
+    const comment = await prisma.forumComment.findUnique({
+      where: { id: commentId },
+    });
+    if (!comment) return { error: "Комментарий не найден" };
 
-  const canDelete =
-    dbUser.id === comment.authorId ||
-    ["ADMIN", "OWNER", "MODERATOR"].includes(dbUser.role);
+    const canDelete =
+      dbUser.id === comment.authorId ||
+      ["ADMIN", "OWNER", "MODERATOR"].includes(dbUser.role);
 
-  if (!canDelete) return { error: "Permission denied" };
+    if (!canDelete) return { error: "Нет прав для удаления" };
 
     await prisma.forumComment.delete({ where: { id: commentId } });
     revalidatePath(`/community/post/${comment.postId}`);

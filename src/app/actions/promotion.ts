@@ -165,6 +165,11 @@ export async function getMyPromotions() {
     console.error("getMyPromotions error:", error);
     return [];
   }
+}
+
+/**
+ * Cron job to expire promotions (call from /api/cron/expire-promotions)
+ */
 export async function expirePromotions() {
   const now = new Date();
 
