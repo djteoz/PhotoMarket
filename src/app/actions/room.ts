@@ -21,7 +21,7 @@ const roomSchema = z.object({
 
 export async function createRoom(
   studioId: string,
-  formData: z.infer<typeof roomSchema>
+  formData: z.infer<typeof roomSchema>,
 ) {
   try {
     const { clerkUser, dbUser } = await ensureDbUser();
@@ -81,7 +81,7 @@ export async function createRoom(
 
 export async function updateRoom(
   roomId: string,
-  formData: z.infer<typeof roomSchema>
+  formData: z.infer<typeof roomSchema>,
 ) {
   try {
     const { clerkUser, dbUser } = await ensureDbUser();
@@ -99,7 +99,10 @@ export async function updateRoom(
       return { error: "Зал не найден" };
     }
 
-    if (room.studio.owner.clerkId !== clerkUser.id && dbUser?.role !== "ADMIN") {
+    if (
+      room.studio.owner.clerkId !== clerkUser.id &&
+      dbUser?.role !== "ADMIN"
+    ) {
       return { error: "Нет прав для редактирования" };
     }
 
@@ -156,7 +159,10 @@ export async function updateRoomIcal(roomId: string, importUrl: string) {
       return { error: "Зал не найден" };
     }
 
-    if (room.studio.owner.clerkId !== clerkUser.id && dbUser?.role !== "ADMIN") {
+    if (
+      room.studio.owner.clerkId !== clerkUser.id &&
+      dbUser?.role !== "ADMIN"
+    ) {
       return { error: "Нет прав для редактирования" };
     }
 

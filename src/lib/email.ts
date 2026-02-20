@@ -1,7 +1,12 @@
 import { Resend } from "resend";
 
-// Initialize Resend client
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-initialize Resend client to avoid crash when API key is missing
+let _resend: Resend | null = null;
+function getResend(): Resend | null {
+  if (!process.env.RESEND_API_KEY) return null;
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 const FROM_EMAIL =
   process.env.FROM_EMAIL || "PhotoMarket <noreply@photomarket.tech>";
@@ -30,6 +35,12 @@ export async function sendEmail({
   }
 
   try {
+    const resend = getResend();
+    if (!resend) {
+      console.warn("[Email] Resend client not available");
+      return { success: false, error: "Email not configured" };
+    }
+
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: Array.isArray(to) ? to : [to],

@@ -2,7 +2,13 @@ import { Resend } from "resend";
 import { BookingConfirmationEmail } from "@/emails/booking-confirmation";
 import { NewBookingOwnerEmail } from "@/emails/new-booking-owner";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-initialize Resend client to avoid crash when API key is missing
+let _resend: Resend | null = null;
+function getResend(): Resend | null {
+  if (!process.env.RESEND_API_KEY) return null;
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 const FROM_EMAIL =
   process.env.FROM_EMAIL || "PhotoMarket <noreply@photomarket.tech>";
@@ -41,6 +47,9 @@ export async function sendBookingNotification({
   }
 
   try {
+    const resend = getResend();
+    if (!resend) return;
+
     await resend.emails.send({
       from: FROM_EMAIL,
       to,
@@ -99,6 +108,9 @@ export async function sendNewBookingNotificationToOwner({
   }
 
   try {
+    const resend = getResend();
+    if (!resend) return;
+
     await resend.emails.send({
       from: FROM_EMAIL,
       to,

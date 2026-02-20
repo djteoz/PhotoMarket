@@ -32,7 +32,7 @@ const promotionsStore: PromotionRecord[] = [];
  */
 export async function getPromotionPrice(
   type: PromotionType,
-  duration: PromotionDuration
+  duration: PromotionDuration,
 ) {
   return PROMOTION_PRICES[type][duration];
 }
@@ -43,7 +43,7 @@ export async function getPromotionPrice(
 export async function createPromotion(
   studioId: string,
   type: PromotionType,
-  duration: PromotionDuration
+  duration: PromotionDuration,
 ) {
   try {
     const result = await ensureDbUser();
@@ -63,35 +63,35 @@ export async function createPromotion(
       return { error: "Нет доступа к этой студии" };
     }
 
-  const amount = await getPromotionPrice(type, duration);
-  const durationDays = duration === "day" ? 1 : duration === "week" ? 7 : 30;
+    const amount = await getPromotionPrice(type, duration);
+    const durationDays = duration === "day" ? 1 : duration === "week" ? 7 : 30;
 
-  const startDate = new Date();
-  const endDate = new Date();
-  endDate.setDate(endDate.getDate() + durationDays);
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + durationDays);
 
-  // Create in-memory promotion (temporary until Prisma model works)
-  const promotion: PromotionRecord = {
-    id: `promo_${Date.now()}_${Math.random().toString(36).slice(2)}`,
-    studioId,
-    type,
-    startDate,
-    endDate,
-    amount,
-    status: "ACTIVE",
-  };
+    // Create in-memory promotion (temporary until Prisma model works)
+    const promotion: PromotionRecord = {
+      id: `promo_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+      studioId,
+      type,
+      startDate,
+      endDate,
+      amount,
+      status: "ACTIVE",
+    };
 
-  promotionsStore.push(promotion);
+    promotionsStore.push(promotion);
 
-  revalidatePath("/catalog");
-  revalidatePath(`/studios/${studioId}`);
-  revalidatePath("/dashboard");
+    revalidatePath("/catalog");
+    revalidatePath(`/studios/${studioId}`);
+    revalidatePath("/dashboard");
 
-  return {
-    success: true,
-    promotion,
-    paymentUrl: `/api/payment/promotion?promotionId=${promotion.id}`,
-  };
+    return {
+      success: true,
+      promotion,
+      paymentUrl: `/api/payment/promotion?promotionId=${promotion.id}`,
+    };
   } catch (error) {
     console.error("createPromotion error:", error);
     return { error: "Не удалось создать продвижение" };
@@ -152,7 +152,7 @@ export async function getMyPromotions() {
     return promotionsStore
       .filter(
         (p) =>
-          studioIds.has(p.studioId) && p.status === "ACTIVE" && p.endDate > now
+          studioIds.has(p.studioId) && p.status === "ACTIVE" && p.endDate > now,
       )
       .map((p) => ({
         ...p,
@@ -195,7 +195,7 @@ export async function isStudioPromoted(studioId: string): Promise<{
 }> {
   const now = new Date();
   const activePromotion = promotionsStore.find(
-    (p) => p.studioId === studioId && p.status === "ACTIVE" && p.endDate > now
+    (p) => p.studioId === studioId && p.status === "ACTIVE" && p.endDate > now,
   );
 
   if (activePromotion) {
