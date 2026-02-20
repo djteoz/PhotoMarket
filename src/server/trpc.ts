@@ -125,7 +125,10 @@ export const ownerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
  * Admin procedure - requires ADMIN or OWNER role
  */
 export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  if (!ctx.dbUser || (ctx.dbUser.role !== "ADMIN" && ctx.dbUser.role !== "OWNER")) {
+  if (
+    !ctx.dbUser ||
+    (ctx.dbUser.role !== "ADMIN" && ctx.dbUser.role !== "OWNER")
+  ) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Требуются права администратора",
@@ -143,19 +146,29 @@ export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
 /**
  * Moderator procedure - requires MODERATOR, ADMIN or OWNER role
  */
-export const moderatorProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  const ROLE_LEVEL: Record<string, number> = { USER: 0, MODERATOR: 1, ADMIN: 2, OWNER: 3 };
-  if (!ctx.dbUser || (ROLE_LEVEL[ctx.dbUser.role] ?? 0) < ROLE_LEVEL.MODERATOR) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Требуются права модератора",
-    });
-  }
+export const moderatorProcedure = protectedProcedure.use(
+  async ({ ctx, next }) => {
+    const ROLE_LEVEL: Record<string, number> = {
+      USER: 0,
+      MODERATOR: 1,
+      ADMIN: 2,
+      OWNER: 3,
+    };
+    if (
+      !ctx.dbUser ||
+      (ROLE_LEVEL[ctx.dbUser.role] ?? 0) < ROLE_LEVEL.MODERATOR
+    ) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Требуются права модератора",
+      });
+    }
 
-  return next({
-    ctx: {
-      ...ctx,
-      dbUser: ctx.dbUser,
-    },
-  });
-});
+    return next({
+      ctx: {
+        ...ctx,
+        dbUser: ctx.dbUser,
+      },
+    });
+  },
+);

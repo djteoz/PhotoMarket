@@ -39,7 +39,11 @@ export async function createRoom(
       return { error: "Студия не найдена" };
     }
 
-    if (studio.owner.clerkId !== clerkUser.id && dbUser?.role !== "ADMIN" && dbUser?.role !== "OWNER") {
+    if (
+      studio.owner.clerkId !== clerkUser.id &&
+      dbUser?.role !== "ADMIN" &&
+      dbUser?.role !== "OWNER"
+    ) {
       return { error: "Нет прав для добавления зала" };
     }
 

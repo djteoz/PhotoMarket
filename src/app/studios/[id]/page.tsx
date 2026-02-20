@@ -160,7 +160,11 @@ export default async function StudioPage({ params }: Props) {
         studio.reviews.length
       : 0;
 
-  const isOwner = user?.id === studio.owner.clerkId || dbUser?.role === "ADMIN" || dbUser?.role === "OWNER";
+  const isStudioOwner = user?.id === studio.owner.clerkId;
+  const canManageStudio =
+    isStudioOwner ||
+    dbUser?.role === "ADMIN" ||
+    dbUser?.role === "OWNER";
 
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL || "https://www.photomarket.tech";
@@ -237,13 +241,13 @@ export default async function StudioPage({ params }: Props) {
                     {studio.rooms.length === 1
                       ? "зал"
                       : studio.rooms.length < 5
-                      ? "зала"
-                      : "залов"}
+                        ? "зала"
+                        : "залов"}
                   </span>
                 </div>
               </div>
               <div className="flex gap-2">
-                {isOwner && (
+                {canManageStudio && (
                   <Button variant="secondary" asChild>
                     <Link href={`/studios/${studio.id}/edit`}>
                       <Edit className="h-4 w-4 mr-2" /> Редактировать
@@ -342,7 +346,7 @@ export default async function StudioPage({ params }: Props) {
                           </div>
                         </div>
                         <div className="flex flex-col gap-2 md:self-center">
-                          {isOwner && (
+                          {canManageStudio && (
                             <Button variant="outline" size="sm" asChild>
                               <Link
                                 href={`/studios/${studio.id}/rooms/${room.id}/edit`}
@@ -391,7 +395,7 @@ export default async function StudioPage({ params }: Props) {
                   Отзывы ({studio.reviews.length})
                 </h2>
 
-                {user && !isOwner && (
+                {user && !isStudioOwner && (
                   <div className="mb-8 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                     <AddReviewForm studioId={studio.id} />
                   </div>
@@ -545,7 +549,7 @@ export default async function StudioPage({ params }: Props) {
                       <Sparkles className="w-4 h-4 text-purple-500" />
                       от{" "}
                       {Math.min(
-                        ...studio.rooms.map((r) => Number(r.pricePerHour))
+                        ...studio.rooms.map((r) => Number(r.pricePerHour)),
                       ).toLocaleString()}{" "}
                       ₽/час
                     </li>

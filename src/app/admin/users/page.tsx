@@ -169,10 +169,12 @@ export default async function AdminUsersPage() {
                           disabled={
                             u.role === "OWNER" ||
                             (u.role === "ADMIN" && dbUser?.role !== "OWNER") ||
-                            (u.role === "MODERATOR" && dbUser?.role === "MODERATOR")
+                            (u.role === "MODERATOR" &&
+                              dbUser?.role === "MODERATOR")
                           }
                         />
-                        {(dbUser?.role === "OWNER" || dbUser?.role === "ADMIN") && (
+                        {(dbUser?.role === "OWNER" ||
+                          dbUser?.role === "ADMIN") && (
                           <DeleteUserButton userId={u.id} />
                         )}
                       </div>

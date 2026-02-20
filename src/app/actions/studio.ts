@@ -95,7 +95,11 @@ export async function updateStudio(
     where: { clerkId: user.id },
   });
 
-  if (studio.owner.clerkId !== user.id && dbUser?.role !== "ADMIN" && dbUser?.role !== "OWNER") {
+  if (
+    studio.owner.clerkId !== user.id &&
+    dbUser?.role !== "ADMIN" &&
+    dbUser?.role !== "OWNER"
+  ) {
     return { error: "Unauthorized" };
   }
 

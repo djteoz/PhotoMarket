@@ -48,7 +48,9 @@ export async function updateUserRole(userId: string, newRole: Role) {
 
     // Нельзя менять роль пользователю с ролью >= своей (кроме OWNER)
     if (caller.role !== "OWNER" && targetLevel >= callerLevel) {
-      return { error: "Недостаточно прав для изменения роли этого пользователя" };
+      return {
+        error: "Недостаточно прав для изменения роли этого пользователя",
+      };
     }
 
     // OWNER не может быть понижен никем кроме себя
