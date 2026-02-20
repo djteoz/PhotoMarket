@@ -10,6 +10,11 @@ import { ru } from "date-fns/locale";
 
 const YOOKASSA_SHOP_ID = process.env.YOOKASSA_SHOP_ID;
 const YOOKASSA_SECRET_KEY = process.env.YOOKASSA_SECRET_KEY;
+const APP_URL = "https://photomarket.tech";
+
+function redirect(path: string) {
+  return NextResponse.redirect(new URL(path, APP_URL));
+}
 
 // Helper: Check payment status via YooKassa API
 async function getYookassaPaymentStatus(externalId: string) {
@@ -155,7 +160,10 @@ async function cancelBookingPayment(paymentId: string, bookingId: string) {
 }
 
 // Helper: Process payment based on type (subscription or booking)
-async function processSucceededPayment(paymentId: string, metadata: Record<string, string>) {
+async function processSucceededPayment(
+  paymentId: string,
+  metadata: Record<string, string>,
+) {
   if (metadata.type === "booking" && metadata.bookingId) {
     await confirmBookingPayment(paymentId, metadata.bookingId);
   } else {
@@ -165,7 +173,10 @@ async function processSucceededPayment(paymentId: string, metadata: Record<strin
   }
 }
 
-async function processCanceledPayment(paymentId: string, metadata: Record<string, string>) {
+async function processCanceledPayment(
+  paymentId: string,
+  metadata: Record<string, string>,
+) {
   if (metadata.type === "booking" && metadata.bookingId) {
     await cancelBookingPayment(paymentId, metadata.bookingId);
   } else {
@@ -183,7 +194,7 @@ export async function GET(req: NextRequest) {
   const mockSuccess = searchParams.get("mock_payment");
 
   if (!paymentId) {
-    return NextResponse.redirect(new URL("/pricing?error=missing_id", req.url));
+    return redirect("/pricing?error=missing_id");
   }
 
   const payment = await prisma.payment.findUnique({
@@ -192,9 +203,7 @@ export async function GET(req: NextRequest) {
   });
 
   if (!payment) {
-    return NextResponse.redirect(
-      new URL("/pricing?error=payment_not_found", req.url),
-    );
+    return redirect("/pricing?error=payment_not_found");
   }
 
   const isBookingPayment = payment.type === "BOOKING";
@@ -212,7 +221,7 @@ export async function GET(req: NextRequest) {
     } else {
       await activateSubscription(paymentId, payment.plan);
     }
-    return NextResponse.redirect(new URL(successRedirect, req.url));
+    return redirect(successRedirect);
   }
 
   // Real mode: Check payment status via YooKassa API
@@ -225,7 +234,7 @@ export async function GET(req: NextRequest) {
       } else {
         await activateSubscription(paymentId, payment.plan);
       }
-      return NextResponse.redirect(new URL(successRedirect, req.url));
+      return redirect(successRedirect);
     } else if (yookassaStatus?.status === "canceled") {
       if (isBookingPayment && payment.booking) {
         await cancelBookingPayment(paymentId, payment.booking.id);
@@ -235,17 +244,17 @@ export async function GET(req: NextRequest) {
           data: { status: "CANCELED" },
         });
       }
-      return NextResponse.redirect(new URL(errorRedirect, req.url));
+      return redirect(errorRedirect);
     }
   }
 
   // Payment already succeeded
   if (payment.status === "SUCCEEDED") {
-    return NextResponse.redirect(new URL(successRedirect, req.url));
+    return redirect(successRedirect);
   }
 
   // Still pending - redirect to dashboard with waiting status
-  return NextResponse.redirect(new URL("/dashboard?payment=pending", req.url));
+  return redirect("/dashboard?payment=pending");
 }
 
 // POST: YooKassa Webhook (called by YooKassa servers)

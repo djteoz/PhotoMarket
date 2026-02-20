@@ -56,12 +56,27 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
       return { error: "Зал не найден" };
     }
 
-    // Проверка на пересечение бронирований
+    // Отменяем старые неоплаченные PENDING брони этого пользователя на этот зал
+    await prisma.booking.updateMany({
+      where: {
+        roomId,
+        userId: dbUser.id,
+        status: "PENDING",
+        isPaid: false,
+      },
+      data: { status: "CANCELLED" },
+    });
+
+    // Проверка на пересечение бронирований (только оплаченные/подтверждённые)
     const conflictingBooking = await prisma.booking.findFirst({
       where: {
         roomId,
-        status: { not: "CANCELLED" },
         OR: [
+          { status: "CONFIRMED" },
+          { status: "COMPLETED" },
+          { status: "PENDING", isPaid: true },
+        ],
+        AND: [
           {
             startTime: { lt: endDateTime },
             endTime: { gt: startDateTime },
@@ -157,7 +172,12 @@ export async function getRoomBookings(roomId: string, date: Date) {
   const bookings = await prisma.booking.findMany({
     where: {
       roomId,
-      status: { not: "CANCELLED" },
+      // Показываем как занятые только оплаченные или подтверждённые брони
+      OR: [
+        { status: "CONFIRMED" },
+        { status: "COMPLETED" },
+        { status: "PENDING", isPaid: true },
+      ],
       startTime: {
         gte: startOfDay,
         lt: endOfDay,

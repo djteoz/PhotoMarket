@@ -806,7 +806,9 @@ export default async function DashboardPage() {
                           })}
                         </td>
                         <td className="px-6 py-4 font-medium">
-                          {payment.type === "BOOKING" ? "Бронирование" : `Подписка ${payment.plan}`}
+                          {payment.type === "BOOKING"
+                            ? "Бронирование"
+                            : `Подписка ${payment.plan}`}
                         </td>
                         <td className="px-6 py-4 font-bold">
                           {Number(payment.amount).toLocaleString()} ₽
