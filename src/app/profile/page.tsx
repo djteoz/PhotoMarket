@@ -172,10 +172,22 @@ export default async function ProfilePage() {
                   <Crown className="w-3 h-3 inline mr-1" />
                   {subscriptionLabels[dbUser.subscriptionPlan]}
                 </span>
+                {dbUser.role === "OWNER" && (
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-700">
+                    <Crown className="w-3 h-3 inline mr-1" />
+                    Владелец
+                  </span>
+                )}
                 {dbUser.role === "ADMIN" && (
                   <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-700">
                     <Shield className="w-3 h-3 inline mr-1" />
                     Администратор
+                  </span>
+                )}
+                {dbUser.role === "MODERATOR" && (
+                  <span className="px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700">
+                    <Shield className="w-3 h-3 inline mr-1" />
+                    Модератор
                   </span>
                 )}
                 <span className="text-sm text-slate-400">

@@ -211,10 +211,11 @@ export default async function DashboardPage() {
               </p>
             </div>
             <div className="flex gap-3">
-              {dbUser.role === "ADMIN" && (
+              {(dbUser.role === "ADMIN" || dbUser.role === "OWNER" || dbUser.role === "MODERATOR") && (
                 <Button variant="destructive" asChild>
                   <Link href="/admin">
-                    <Shield className="mr-2 h-4 w-4" /> Админ
+                    <Shield className="mr-2 h-4 w-4" />
+                    {dbUser.role === "OWNER" ? "Управление" : dbUser.role === "ADMIN" ? "Админ" : "Модерация"}
                   </Link>
                 </Button>
               )}

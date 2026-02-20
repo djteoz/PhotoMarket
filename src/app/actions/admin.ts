@@ -5,6 +5,14 @@ import { revalidatePath } from "next/cache";
 import { Role } from "@prisma/client";
 import { ensureDbUser } from "@/lib/ensure-db-user";
 
+// Иерархия ролей: OWNER > ADMIN > MODERATOR > USER
+const ROLE_LEVEL: Record<Role, number> = {
+  USER: 0,
+  MODERATOR: 1,
+  ADMIN: 2,
+  OWNER: 3,
+};
+
 async function requireAdmin() {
   const { dbUser } = await ensureDbUser();
   if (!dbUser || (dbUser.role !== "ADMIN" && dbUser.role !== "OWNER")) {
@@ -13,9 +21,40 @@ async function requireAdmin() {
   return dbUser;
 }
 
+async function requireModerator() {
+  const { dbUser } = await ensureDbUser();
+  if (!dbUser || ROLE_LEVEL[dbUser.role] < ROLE_LEVEL.MODERATOR) {
+    throw new Error("Требуются права модератора");
+  }
+  return dbUser;
+}
+
 export async function updateUserRole(userId: string, newRole: Role) {
   try {
-    await requireAdmin();
+    const caller = await requireAdmin();
+    const callerLevel = ROLE_LEVEL[caller.role];
+    const newRoleLevel = ROLE_LEVEL[newRole];
+
+    // Нельзя назначить роль выше или равную своей (кроме OWNER)
+    if (caller.role !== "OWNER" && newRoleLevel >= callerLevel) {
+      return { error: "Нельзя назначить роль равную или выше своей" };
+    }
+
+    // Проверяем целевого пользователя
+    const target = await prisma.user.findUnique({ where: { id: userId } });
+    if (!target) return { error: "Пользователь не найден" };
+
+    const targetLevel = ROLE_LEVEL[target.role];
+
+    // Нельзя менять роль пользователю с ролью >= своей (кроме OWNER)
+    if (caller.role !== "OWNER" && targetLevel >= callerLevel) {
+      return { error: "Недостаточно прав для изменения роли этого пользователя" };
+    }
+
+    // OWNER не может быть понижен никем кроме себя
+    if (target.role === "OWNER" && caller.id !== target.id) {
+      return { error: "Только владелец может изменить свою роль" };
+    }
 
     await prisma.user.update({
       where: { id: userId },
@@ -65,7 +104,21 @@ export async function deleteStudio(studioId: string) {
 
 export async function deleteUser(userId: string) {
   try {
-    await requireAdmin();
+    const caller = await requireAdmin();
+
+    // Проверяем целевого пользователя
+    const target = await prisma.user.findUnique({ where: { id: userId } });
+    if (!target) return { error: "Пользователь не найден" };
+
+    // OWNER не может быть удалён
+    if (target.role === "OWNER") {
+      return { error: "Невозможно удалить владельца" };
+    }
+
+    // ADMIN не может удалить другого ADMIN
+    if (caller.role === "ADMIN" && target.role === "ADMIN") {
+      return { error: "Администратор не может удалить другого администратора" };
+    }
 
     await prisma.user.delete({
       where: { id: userId },

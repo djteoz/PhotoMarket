@@ -16,7 +16,7 @@ import { UserRoleSelector } from "@/components/admin/user-role-selector";
 import { UserSubscriptionSelector } from "@/components/admin/user-subscription-selector";
 import { BanUserButton } from "@/components/admin/ban-user-button";
 import { currentUser } from "@clerk/nextjs/server";
-import { Users, Shield, Crown, User } from "lucide-react";
+import { Users, Shield, Crown, User, ShieldCheck } from "lucide-react";
 
 export default async function AdminUsersPage() {
   const users = await prisma.user.findMany({
@@ -36,6 +36,7 @@ export default async function AdminUsersPage() {
   const roleStats = {
     OWNER: users.filter((u) => u.role === "OWNER").length,
     ADMIN: users.filter((u) => u.role === "ADMIN").length,
+    MODERATOR: users.filter((u) => u.role === "MODERATOR").length,
     USER: users.filter((u) => u.role === "USER").length,
   };
 
@@ -68,6 +69,12 @@ export default async function AdminUsersPage() {
           <Shield className="w-3 h-3 text-violet-600" />
           <span className="text-sm text-violet-700">
             Админы: {roleStats.ADMIN}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-200">
+          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+          <span className="text-sm text-emerald-700">
+            Модераторы: {roleStats.MODERATOR}
           </span>
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-200">
@@ -161,10 +168,13 @@ export default async function AdminUsersPage() {
                           isBanned={u.isBanned}
                           disabled={
                             u.role === "OWNER" ||
-                            (u.role === "ADMIN" && dbUser?.role !== "OWNER")
+                            (u.role === "ADMIN" && dbUser?.role !== "OWNER") ||
+                            (u.role === "MODERATOR" && dbUser?.role === "MODERATOR")
                           }
                         />
-                        <DeleteUserButton userId={u.id} />
+                        {(dbUser?.role === "OWNER" || dbUser?.role === "ADMIN") && (
+                          <DeleteUserButton userId={u.id} />
+                        )}
                       </div>
                     )}
                   </TableCell>

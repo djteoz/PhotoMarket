@@ -160,7 +160,7 @@ export default async function StudioPage({ params }: Props) {
         studio.reviews.length
       : 0;
 
-  const isOwner = user?.id === studio.owner.clerkId || dbUser?.role === "ADMIN";
+  const isOwner = user?.id === studio.owner.clerkId || dbUser?.role === "ADMIN" || dbUser?.role === "OWNER";
 
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL || "https://www.photomarket.tech";
