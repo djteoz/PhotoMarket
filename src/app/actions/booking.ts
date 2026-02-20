@@ -10,6 +10,9 @@ import {
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { ensureDbUser } from "@/lib/ensure-db-user";
+import { createYookassaPayment } from "@/lib/payment/yookassa";
+
+const PLATFORM_COMMISSION_PERCENT = 10; // Комиссия платформы 10%
 
 const bookingSchema = z.object({
   roomId: z.string(),
@@ -72,46 +75,70 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
     }
 
     const totalPrice = Number(room.pricePerHour) * duration;
+    const commission = Math.round(totalPrice * PLATFORM_COMMISSION_PERCENT / 100);
+    const totalWithCommission = totalPrice + commission;
 
-    await prisma.booking.create({
+    // Создаём бронирование со статусом PENDING (неоплачено)
+    const booking = await prisma.booking.create({
       data: {
         userId: dbUser.id,
         roomId,
         startTime: startDateTime,
         endTime: endDateTime,
-        totalPrice,
+        totalPrice: totalWithCommission,
         status: "PENDING",
+        isPaid: false,
       },
     });
 
-    // Send notifications
+    // Создаём платёж в БД
+    const payment = await prisma.payment.create({
+      data: {
+        userId: dbUser.id,
+        amount: totalWithCommission,
+        provider: "YOOKASSA",
+        status: "PENDING",
+        type: "BOOKING",
+        plan: "FREE", // Не подписка, но поле обязательное
+      },
+    });
+
+    // Привязываем платёж к бронированию
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: { paymentId: payment.id },
+    });
+
+    // Создаём платёж в ЮKassa
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://photomarket.tech";
+    const returnUrl = `${appUrl}/api/payment/callback/yookassa?paymentId=${payment.id}`;
+
     const dateStr = format(startDateTime, "d MMMM yyyy", { locale: ru });
-    const timeStr = `${format(startDateTime, "HH:mm")} - ${format(
-      endDateTime,
-      "HH:mm",
-    )}`;
+    const timeStr = `${format(startDateTime, "HH:mm")} - ${format(endDateTime, "HH:mm")}`;
 
-    // To User
-    await sendBookingNotification({
-      to: dbUser.email,
-      userName: dbUser.name || "Пользователь",
-      studioName: room.studio.name,
-      roomName: room.name,
-      date: dateStr,
-      time: timeStr,
+    const yookassaPayment = await createYookassaPayment(
+      totalWithCommission,
+      `Бронирование: ${room.studio.name} — ${room.name}, ${dateStr}, ${timeStr}`,
+      returnUrl,
+      {
+        paymentId: payment.id,
+        bookingId: booking.id,
+        type: "booking",
+      },
+    );
+
+    // Сохраняем ID платежа от ЮKassa
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: { externalId: yookassaPayment.id },
     });
 
-    // To Owner
-    await sendNewBookingNotificationToOwner({
-      to: room.studio.owner.email,
-      ownerName: room.studio.owner.name || "Владелец",
-      studioName: room.studio.name,
-      roomName: room.name,
-      date: dateStr,
-      time: timeStr,
-    });
-
-    return { success: true };
+    // Возвращаем URL для редиректа на страницу оплаты
+    return {
+      success: true,
+      paymentUrl: yookassaPayment.confirmation.confirmation_url,
+      bookingId: booking.id,
+    };
   } catch (error) {
     console.error("Failed to create booking:", error);
     return { error: "Не удалось создать бронирование" };
@@ -167,6 +194,7 @@ export async function updateBookingStatus(
           },
         },
         user: true,
+        payment: true,
       },
     });
 
@@ -198,6 +226,15 @@ export async function updateBookingStatus(
       where: { id: bookingId },
       data: { status },
     });
+
+    // Если отменяем оплаченное бронирование — помечаем платёж как отменённый
+    if (status === "CANCELLED" && booking.paymentId && booking.isPaid) {
+      await prisma.payment.update({
+        where: { id: booking.paymentId },
+        data: { status: "CANCELED" },
+      });
+      // TODO: Реализовать автоматический возврат через YooKassa API refunds
+    }
 
     return { success: true };
   } catch (error) {

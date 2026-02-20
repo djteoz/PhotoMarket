@@ -154,6 +154,11 @@ model BannedIp {
   createdBy String? // User ID of admin who banned
 }
 
+enum PaymentType {
+  SUBSCRIPTION
+  BOOKING
+}
+
 model Payment {
   id         String           @id @default(cuid())
   userId     String
@@ -163,7 +168,9 @@ model Payment {
   provider   String // "YOOKASSA" | "ROBOKASSA"
   externalId String? // ID from the provider
   status     String // "PENDING", "SUCCEEDED", "CANCELED"
-  plan       SubscriptionPlan
+  type       PaymentType      @default(SUBSCRIPTION)
+  plan       SubscriptionPlan @default(FREE)
+  booking    Booking?         // Связь с бронированием (для type=BOOKING)
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
 }
@@ -279,6 +286,11 @@ model Booking {
   endTime    DateTime
   totalPrice Decimal
   status     BookingStatus @default(PENDING)
+
+  // Оплата бронирования
+  paymentId  String?  @unique
+  payment    Payment? @relation(fields: [paymentId], references: [id])
+  isPaid     Boolean  @default(false)
 
   source     String  @default("INTERNAL") // "INTERNAL" | "ICAL"
   externalId String? // UID from iCal event

@@ -552,6 +552,16 @@ export default async function DashboardPage() {
                                   ? "Отменено"
                                   : booking.status}
                           </span>
+                          {booking.isPaid && (
+                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 ml-1">
+                              💳 Оплачено
+                            </span>
+                          )}
+                          {!booking.isPaid && booking.status === "PENDING" && (
+                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 ml-1">
+                              Ожидание оплаты
+                            </span>
+                          )}
                         </div>
                         <BookingActions
                           bookingId={booking.id}
@@ -635,6 +645,16 @@ export default async function DashboardPage() {
                                   ? "Отменено"
                                   : booking.status}
                           </span>
+                          {booking.isPaid && (
+                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 ml-1">
+                              💳 Оплачено
+                            </span>
+                          )}
+                          {!booking.isPaid && booking.status === "PENDING" && (
+                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 ml-1">
+                              Ожидание оплаты
+                            </span>
+                          )}
                         </div>
                         <BookingActions
                           bookingId={booking.id}
@@ -768,7 +788,7 @@ export default async function DashboardPage() {
                   <thead className="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 uppercase text-xs">
                     <tr>
                       <th className="px-6 py-4">Дата</th>
-                      <th className="px-6 py-4">Тариф</th>
+                      <th className="px-6 py-4">Тип</th>
                       <th className="px-6 py-4">Сумма</th>
                       <th className="px-6 py-4">Способ</th>
                       <th className="px-6 py-4">Статус</th>
@@ -786,7 +806,7 @@ export default async function DashboardPage() {
                           })}
                         </td>
                         <td className="px-6 py-4 font-medium">
-                          {payment.plan}
+                          {payment.type === "BOOKING" ? "Бронирование" : `Подписка ${payment.plan}`}
                         </td>
                         <td className="px-6 py-4 font-bold">
                           {Number(payment.amount).toLocaleString()} ₽

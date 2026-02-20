@@ -14,6 +14,7 @@ import { createBooking, getRoomBookings } from "@/app/actions/booking";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { toast } from "sonner";
+import { CreditCard, Loader2 } from "lucide-react";
 
 interface BookingFormProps {
   roomId: string;
@@ -67,24 +68,16 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
 
       if (result?.error) {
         toast.error(result.error);
-      } else {
-        toast.success("Бронирование успешно создано!");
-        setBookedSlots((prev) => [
-          ...prev,
-          {
-            startTime: new Date(), // Placeholder, ideally fetch again
-            endTime: new Date(),
-          },
-        ]);
-        // Refresh bookings
-        if (date) {
-          getRoomBookings(roomId, date).then(setBookedSlots);
-        }
+      } else if (result?.paymentUrl) {
+        toast.success("Перенаправляем на страницу оплаты...");
+        // Redirect to YooKassa payment page
+        window.location.href = result.paymentUrl;
       }
     });
   };
 
   const totalPrice = pricePerHour * Number(duration);
+  const commission = Math.round(totalPrice * 0.1);
 
   return (
     <div className="space-y-6">
@@ -144,18 +137,39 @@ export function BookingForm({ roomId, pricePerHour }: BookingFormProps) {
         </div>
       </div>
 
-      <div className="border-t pt-4">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-gray-600">Итого:</span>
-          <span className="text-xl font-bold">{totalPrice} ₽</span>
+      <div className="border-t pt-4 space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-600">Аренда зала:</span>
+          <span className="font-medium">{totalPrice} ₽</span>
+        </div>
+        <div className="flex justify-between items-center text-sm text-gray-500">
+          <span>Сервисный сбор (10%):</span>
+          <span>{commission} ₽</span>
+        </div>
+        <div className="flex justify-between items-center border-t pt-2">
+          <span className="text-gray-600 font-medium">К оплате:</span>
+          <span className="text-xl font-bold">{totalPrice + commission} ₽</span>
         </div>
         <Button
           className="w-full"
           onClick={handleBooking}
           disabled={!date || !startTime || isPending}
         >
-          {isPending ? "Бронирование..." : "Забронировать"}
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Создание платежа...
+            </>
+          ) : (
+            <>
+              <CreditCard className="mr-2 h-4 w-4" />
+              Оплатить и забронировать
+            </>
+          )}
         </Button>
+        <p className="text-xs text-center text-gray-400">
+          Оплата через ЮKassa. Бронь подтверждается автоматически после оплаты.
+        </p>
       </div>
     </div>
   );
