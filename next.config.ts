@@ -71,6 +71,20 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/%24",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/mec",
+        destination: "/",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withBundleAnalyzer(

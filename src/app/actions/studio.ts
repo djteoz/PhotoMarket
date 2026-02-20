@@ -4,6 +4,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { geocodeAddress } from "@/lib/geocode";
 
 // Схема валидации (дублируем или выносим в отдельный файл позже)
 const studioSchema = z.object({
@@ -48,6 +49,9 @@ export async function createStudio(formData: z.infer<typeof studioSchema>) {
 
   const { name, description, address, city, images } = validatedFields.data;
 
+  // Геокодирование адреса для отображения карты
+  const coords = await geocodeAddress(city, address);
+
   try {
     await prisma.studio.create({
       data: {
@@ -57,6 +61,7 @@ export async function createStudio(formData: z.infer<typeof studioSchema>) {
         city,
         images: images || [],
         ownerId: dbUser.id,
+        ...(coords && { lat: coords.lat, lng: coords.lng }),
       },
     });
   } catch (error) {
@@ -69,7 +74,7 @@ export async function createStudio(formData: z.infer<typeof studioSchema>) {
 
 export async function updateStudio(
   studioId: string,
-  formData: z.infer<typeof studioSchema>
+  formData: z.infer<typeof studioSchema>,
 ) {
   const user = await currentUser();
 
@@ -102,6 +107,10 @@ export async function updateStudio(
 
   const { name, description, address, city, images } = validatedFields.data;
 
+  // Геокодирование адреса если адрес или город изменились
+  const addressChanged = studio.address !== address || studio.city !== city;
+  const coords = addressChanged ? await geocodeAddress(city, address) : null;
+
   try {
     await prisma.studio.update({
       where: { id: studioId },
@@ -111,6 +120,7 @@ export async function updateStudio(
         address,
         city,
         images: images || [],
+        ...(coords && { lat: coords.lat, lng: coords.lng }),
       },
     });
   } catch (error) {
