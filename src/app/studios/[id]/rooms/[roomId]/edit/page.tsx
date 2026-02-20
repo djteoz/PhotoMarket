@@ -35,7 +35,7 @@ export default async function EditRoomPage({
     where: { clerkId: user.id },
   });
 
-  if (room.studio.owner.clerkId !== user.id && dbUser?.role !== "ADMIN") {
+  if (room.studio.owner.clerkId !== user.id && dbUser?.role !== "ADMIN" && dbUser?.role !== "OWNER") {
     redirect("/");
   }
 

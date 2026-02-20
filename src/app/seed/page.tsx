@@ -12,7 +12,7 @@ export default async function SeedPage() {
     where: { clerkId: user.id },
   });
 
-  if (dbUser?.role !== "ADMIN") {
+  if (dbUser?.role !== "ADMIN" && dbUser?.role !== "OWNER") {
     return <div>Admin access required</div>;
   }
 

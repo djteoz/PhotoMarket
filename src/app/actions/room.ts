@@ -39,7 +39,7 @@ export async function createRoom(
       return { error: "Студия не найдена" };
     }
 
-    if (studio.owner.clerkId !== clerkUser.id && dbUser?.role !== "ADMIN") {
+    if (studio.owner.clerkId !== clerkUser.id && dbUser?.role !== "ADMIN" && dbUser?.role !== "OWNER") {
       return { error: "Нет прав для добавления зала" };
     }
 
@@ -101,7 +101,8 @@ export async function updateRoom(
 
     if (
       room.studio.owner.clerkId !== clerkUser.id &&
-      dbUser?.role !== "ADMIN"
+      dbUser?.role !== "ADMIN" &&
+      dbUser?.role !== "OWNER"
     ) {
       return { error: "Нет прав для редактирования" };
     }
@@ -161,7 +162,8 @@ export async function updateRoomIcal(roomId: string, importUrl: string) {
 
     if (
       room.studio.owner.clerkId !== clerkUser.id &&
-      dbUser?.role !== "ADMIN"
+      dbUser?.role !== "ADMIN" &&
+      dbUser?.role !== "OWNER"
     ) {
       return { error: "Нет прав для редактирования" };
     }

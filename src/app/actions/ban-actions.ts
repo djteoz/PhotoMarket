@@ -6,7 +6,7 @@ import { ensureDbUser } from "@/lib/ensure-db-user";
 
 async function requireAdmin() {
   const { dbUser } = await ensureDbUser();
-  if (!dbUser || dbUser.role !== "ADMIN") {
+  if (!dbUser || (dbUser.role !== "ADMIN" && dbUser.role !== "OWNER")) {
     throw new Error("Требуются права администратора");
   }
   return dbUser;

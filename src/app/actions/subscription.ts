@@ -21,7 +21,7 @@ export async function updateUserSubscription(
   try {
     // Проверяем, что вызывающий — администратор
     const { dbUser: caller } = await ensureDbUser();
-    if (!caller || caller.role !== "ADMIN") {
+    if (!caller || (caller.role !== "ADMIN" && caller.role !== "OWNER")) {
       return { error: "Требуются права администратора" };
     }
 

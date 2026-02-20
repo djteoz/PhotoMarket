@@ -42,5 +42,7 @@ export async function POST(req: NextRequest) {
 // Success URL (User redirect)
 export async function GET(req: NextRequest) {
   // Robokassa redirects user here after payment
-  return NextResponse.redirect(new URL("/dashboard?payment=success", "https://photomarket.tech"));
+  return NextResponse.redirect(
+    new URL("/dashboard?payment=success", "https://photomarket.tech"),
+  );
 }

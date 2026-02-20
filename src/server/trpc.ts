@@ -125,7 +125,7 @@ export const ownerProcedure = protectedProcedure.use(async ({ ctx, next }) => {
  * Admin procedure - requires admin role
  */
 export const adminProcedure = protectedProcedure.use(async ({ ctx, next }) => {
-  if (!ctx.dbUser || ctx.dbUser.role !== "ADMIN") {
+  if (!ctx.dbUser || (ctx.dbUser.role !== "ADMIN" && ctx.dbUser.role !== "OWNER")) {
     throw new TRPCError({
       code: "FORBIDDEN",
       message: "Требуются права администратора",
