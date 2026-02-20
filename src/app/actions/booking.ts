@@ -75,7 +75,9 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
     }
 
     const totalPrice = Number(room.pricePerHour) * duration;
-    const commission = Math.round(totalPrice * PLATFORM_COMMISSION_PERCENT / 100);
+    const commission = Math.round(
+      (totalPrice * PLATFORM_COMMISSION_PERCENT) / 100,
+    );
     const totalWithCommission = totalPrice + commission;
 
     // Создаём бронирование со статусом PENDING (неоплачено)
@@ -110,7 +112,7 @@ export async function createBooking(formData: z.infer<typeof bookingSchema>) {
     });
 
     // Создаём платёж в ЮKassa
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://photomarket.tech";
+    const appUrl = "https://photomarket.tech";
     const returnUrl = `${appUrl}/api/payment/callback/yookassa?paymentId=${payment.id}`;
 
     const dateStr = format(startDateTime, "d MMMM yyyy", { locale: ru });
