@@ -162,9 +162,7 @@ export default async function StudioPage({ params }: Props) {
 
   const isStudioOwner = user?.id === studio.owner.clerkId;
   const canManageStudio =
-    isStudioOwner ||
-    dbUser?.role === "ADMIN" ||
-    dbUser?.role === "OWNER";
+    isStudioOwner || dbUser?.role === "ADMIN" || dbUser?.role === "OWNER";
 
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL || "https://www.photomarket.tech";
@@ -509,7 +507,7 @@ export default async function StudioPage({ params }: Props) {
                     </div>
                   )}
                   <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
-                    {!isOwner && user ? (
+                    {!isStudioOwner && user ? (
                       <ContactOwnerButton
                         ownerId={studio.owner.id}
                         studioName={studio.name}
